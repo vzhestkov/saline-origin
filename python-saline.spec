@@ -13,10 +13,13 @@ Source0:        saline-2023.04.11.tar.gz
 BuildArch:      noarch
 BuildRequires:  fdupes
 BuildRequires:  python-rpm-macros
+BuildRequires:  systemd-rpm-macros
 BuildRequires:  %{python_module base}
 Requires:       %{python_module salt}
+Requires:       config(saline) = %{version}-%{release}
 Requires(post): update-alternatives
 Requires(postun):update-alternatives
+Provides:       saline(module-python) = %{version}-%{release}
 BuildRoot:      %{_tmppath}/saline-%{version}
 %python_subpackages
 
@@ -29,6 +32,7 @@ Requires(pre):  salt
 Requires:       logrotate
 Requires:       salt-master
 Requires:       systemd
+Requires:       saline(module-python) = %{version}-%{release}
 
 %description -n saline
 Saline is an extension for Salt gathering the metrics from salt events.
@@ -43,7 +47,7 @@ Saline is an extension for Salt gathering the metrics from salt events.
 install -Dpm 0644 salined.service %{buildroot}%{_unitdir}/salined.service
 
 install -Dd -m 0755 %{buildroot}%{_sbindir}
-ln -s service %{buildroot}%{_sbindir}/rcsalined
+ln -sv %{_sbindir}/service %{buildroot}%{_sbindir}/rcsalined
 
 install -Dpm 0644 uyuni-conf/logrotate.d/saline %{buildroot}%{_sysconfdir}/logrotate.d/saline
 
@@ -77,7 +81,7 @@ mv %{buildroot}%{_bindir}/salined %{buildroot}%{_bindir}/salined-%{$python_bin_s
 %python_uninstall_alternative salined
 
 %postun -n saline
-%service_del_postun salined.service
+%service_del_postun_with_restart salined.service
 
 %files %python_files
 %defattr(-,root,root,-)
@@ -90,8 +94,8 @@ mv %{buildroot}%{_bindir}/salined %{buildroot}%{_bindir}/salined-%{$python_bin_s
 %dir %{_sysconfdir}/salt/saline.d
 %config %{_sysconfdir}/salt/saline
 %config %{_sysconfdir}/salt/saline.d/*.conf
-%{_unitdir}/salined.service
 %{_sbindir}/rcsalined
+%{_unitdir}/salined.service
 %ghost %dir /var/log/salt
 %ghost /var/log/salt/saline
 %ghost /var/log/salt/saline-api-access.log
