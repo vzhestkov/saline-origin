@@ -4,7 +4,7 @@ After=network.target salt-master.service
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/salined
+ExecStart=/usr/bin/salined
 
 [Install]
 WantedBy=multi-user.target
