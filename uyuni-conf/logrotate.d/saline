@@ -1,0 +1,26 @@
+/var/log/salt/saline {
+    su salt salt
+    weekly
+    missingok
+    rotate 7
+    compress
+    notifempty
+}
+
+/var/log/salt/saline-api-access.log {
+    su salt salt
+    weekly
+    missingok
+    rotate 7
+    compress
+    notifempty
+}
+
+/var/log/salt/saline-api-error.log {
+    su salt salt
+    weekly
+    missingok
+    rotate 7
+    compress
+    notifempty
+}

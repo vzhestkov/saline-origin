@@ -1,0 +1,10 @@
+[Unit]
+Description=Saline Daemon
+After=network.target salt-master.service
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/salined
+
+[Install]
+WantedBy=multi-user.target

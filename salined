@@ -1,0 +1,9 @@
+#!/usr/bin/python3
+"""
+This script is used to kick off a saline daemon
+"""
+
+from saline.scripts import saline_daemon
+
+if __name__ == "__main__":
+    saline_daemon()
