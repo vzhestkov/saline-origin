@@ -1,0 +1,12 @@
+from distutils.core import setup
+
+setup(
+    name="saline",
+    description="The salt event collector and manager",
+    author="Victor Zhestkov",
+    author_email="vzhestkov@gmail.com",
+    version="2023.04.11",
+    packages=["saline"],
+    license="GPL-2.0",
+    scripts=["salined"],
+)
