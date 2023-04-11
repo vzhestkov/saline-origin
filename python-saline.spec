@@ -9,7 +9,7 @@ Summary:        The salt event collector and manager
 License:        GPL-2.0+
 Group:          System/Management
 URL:            https://github.com/vzhestkov/saline
-Source:         saline-%{version}.obscpio
+Source0:        saline-2023.04.11.tar.gz
 BuildArch:      noarch
 BuildRequires:  fdupes
 BuildRequires:  python-rpm-macros
