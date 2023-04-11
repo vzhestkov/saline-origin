@@ -3,13 +3,13 @@
 %{?!python_module:%define python_module() python3-%{**}}
 
 Name:           python-saline
-Version:        2023.04.11
+Version:        2023.04.12
 Release:        0
 Summary:        The salt event collector and manager
 License:        GPL-2.0+
 Group:          System/Management
 URL:            https://github.com/vzhestkov/saline
-Source0:        saline-2023.04.11.tar.gz
+Source0:        saline-%{version}.tar.gz
 BuildArch:      noarch
 BuildRequires:  fdupes
 BuildRequires:  python-rpm-macros
