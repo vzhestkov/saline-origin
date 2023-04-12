@@ -1,0 +1,4 @@
+- targets:
+  - $$UYUNI-SERVER$$:8216
+  labels:
+    __scheme__: https
