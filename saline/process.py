@@ -57,13 +57,6 @@ class Saline(SignalHandlingProcess):
         Start the main Saline routine
         """
 
-        sock_dir = self.opts["sock_dir"]
-        if not os.path.isdir(sock_dir):
-            try:
-                os.makedirs(sock_dir, 0o755)
-            except OSError as exc:
-                log.error("Could not create SOCK_DIR: %s", exc)
-
         with default_signals(signal.SIGINT, signal.SIGTERM):
             log.info("Creating process manager")
             self.process_manager = ProcessManager(wait_for_kill=5)
