@@ -3,7 +3,7 @@
 %{?!python_module:%define python_module() python3-%{**}}
 
 Name:           python-saline
-Version:        2023.04.12
+Version:        2023.04.18
 Release:        0
 Summary:        The salt event collector and manager
 License:        GPL-2.0+

@@ -2,7 +2,7 @@
   <service name="obs_scm" mode="disabled">
     <param name="url">https://github.com/vzhestkov/saline.git</param>
     <param name="scm">git</param>
-    <param name="revision">2023.04.12</param>
+    <param name="revision">2023.04.18</param>
     <param name="versionformat">@PARENT_TAG@</param>
     <param name="exclude">.git</param>
     <param name="extract">*.spec</param>

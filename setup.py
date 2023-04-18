@@ -6,7 +6,7 @@ setup(
     description="The salt event collector and manager",
     author="Victor Zhestkov",
     author_email="vzhestkov@gmail.com",
-    version="2023.04.11",
+    version="2023.04.18",
     packages=["saline", "saline.config", "saline.data"],
     license="GPL-2.0",
     scripts=["salined"],
