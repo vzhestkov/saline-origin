@@ -1,4 +1,5 @@
 import os
+import pwd
 import signal
 import traceback
 
@@ -76,6 +77,23 @@ class Saline(SalineOptionParser, DaemonsMixin):
         self.daemonize_if_required()
         self.set_pidfile()
         notify_systemd()
+
+        sock_dir = self.config["sock_dir"]
+        if not os.path.isdir(sock_dir):
+            try:
+                os.makedirs(sock_dir, 0o755)
+            except OSError as exc:
+                log.error("Could not create SOCK_DIR: %s", exc)
+
+        saline_user = self.config["user"]
+        if saline_user != get_user():
+            try:
+                pwnam = pwd.getpwnam(saline_user)
+                uid = pwnam.pw_uid
+                gid = pwnam.pw_gid
+                os.chown(sock_dir, uid, gid)
+            except KeyError:
+                log.warning("Unable to get UID and GID for the user: %s", saline_user)
 
     def start(self):
         """
