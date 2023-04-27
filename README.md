@@ -2,14 +2,20 @@
 
 ## Quick start
 
-1. Add saline repository to the Uyuni server
-   `zypper ar https://download.opensuse.org/repositories/home:/vzhestkov:/saline/15.4/home:vzhestkov:saline.repo`
+1. Add saline repository to the Uyuni server:
+   ```
+   zypper ar https://download.opensuse.org/repositories/home:/vzhestkov:/saline/15.4/home:vzhestkov:saline.repo
+   ```
 
-2. Install saline package to the Uyuni server
-   `zypper in saline`
+2. Install saline package to the Uyuni server:
+   ```
+   zypper in saline
+   ```
 
-3. Enable and start salined service
-   `systemctl enable --now salined.service`
+3. Enable and start salined service:
+   ```
+   systemctl enable --now salined.service
+   ```
    The service is already preconfigured to work on the Uyuni server
 
 4. Create the salt configuration channel (`Configuration -> Channels -> + Create State Channel`) with the following contents in init.sls:
