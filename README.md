@@ -36,7 +36,9 @@
 5. Subscribe the Uyuni Proxy server system profile to the salt channel created in previous step (`Configuration -> Manage Configuration Channels -> Subscribe to Channels`).
 
 6. Add `User defined scrape configurations` to the Prometheus formula in the Uyuni Proxy server system profile (`Formulas -> Prometheus -> User defined scrape configurations`):
+
    Job name: `saline`
+
    Files: `/etc/prometheus/saline.yml`
 
 7. The Grafana dashboard examples can be taken from [Uyuni-with-Saline.json](https://github.com/vzhestkov/saline/blob/main/grafana/Uyuni-with-Saline.json) and [Saline-State-Jobs.json](https://github.com/vzhestkov/saline/blob/main/grafana/Saline-State-Jobs.json)
