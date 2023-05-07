@@ -27,7 +27,6 @@ from salt.log.setup import get_multiprocessing_logging_queue
 from salt.utils.process import (
     ProcessManager,
     SignalHandlingProcess,
-    appendproctitle,
     default_signals,
 )
 
@@ -39,7 +38,7 @@ class Saline(SignalHandlingProcess):
     The Saline main process
     """
 
-    def __init__(self, opts):
+    def __init__(self, opts, **kwargs):
         """
         Create a Saline Events Collector instance
 
@@ -68,7 +67,6 @@ class Saline(SignalHandlingProcess):
                     self.opts,
                     self.req_queue,
                 ),
-                name="saline.process.EventsManager",
             )
             self.process_manager.add_process(
                 DataManager,
@@ -76,7 +74,6 @@ class Saline(SignalHandlingProcess):
                     self.opts,
                     self.ret_queue,
                 ),
-                name="saline.process.DataManager",
             )
             for i in range(int(self.opts["readers_subprocesses"])):
                 self.process_manager.add_process(
@@ -87,12 +84,10 @@ class Saline(SignalHandlingProcess):
                         self.ret_queue,
                         i,
                     ),
-                    name="saline.process.EventsReader[%s]" % (i),
                 )
             self.process_manager.add_process(
                 CherryPySrv,
                 args=(self.opts,),
-                name="saline.process.CherryPySrv",
             )
 
         # Install the SIGINT/SIGTERM handlers if not done so far
@@ -118,7 +113,7 @@ class EventsManager(SignalHandlingProcess):
     The Saline Events Manager process
     """
 
-    def __init__(self, opts, queue):
+    def __init__(self, opts, queue, **kwargs):
         """
         Create a Saline Events Manager instance
 
@@ -140,7 +135,6 @@ class EventsManager(SignalHandlingProcess):
         Saline Events Manager routine capturing the events from Sale Event Bus
         """
 
-        appendproctitle(self.name)
         log.info("Running Saline Events Manager")
 
         client_conf_path = os.path.join(salt.syspaths.CONFIG_DIR, "master")
@@ -204,7 +198,7 @@ class DataManager(SignalHandlingProcess):
     The Saline Data Manager process
     """
 
-    def __init__(self, opts, queue):
+    def __init__(self, opts, queue, **kwargs):
         """
         Create a Saline Data Manager instance
 
@@ -232,7 +226,6 @@ class DataManager(SignalHandlingProcess):
         Saline Data Manager routine merging the processed events to the Data Merger
         """
 
-        appendproctitle(self.name)
         log.info("Running Saline Data Manager")
 
         self.datamerger = DataMerger(self.opts)
@@ -341,7 +334,7 @@ class EventsReader(SignalHandlingProcess):
     The Saline Events Reader process
     """
 
-    def __init__(self, opts, req_queue, ret_queue, idx):
+    def __init__(self, opts, req_queue, ret_queue, idx, **kwargs):
         """
         Create a Saline Events Reader instance
 
@@ -367,7 +360,6 @@ class EventsReader(SignalHandlingProcess):
         Saline Events Reader routine processing the captured Salt Events
         """
 
-        appendproctitle(self.name)
         log.info("Running Saline Events Reader: %s", self.name)
 
         while True:
@@ -396,7 +388,7 @@ class CherryPySrv(SignalHandlingProcess):
     The Saline CherryPy Server process
     """
 
-    def __init__(self, opts):
+    def __init__(self, opts, **kwargs):
         """
         Create a Saline CherryPy Server instance
 
@@ -414,7 +406,6 @@ class CherryPySrv(SignalHandlingProcess):
         Turn on the Saline CherryPy Server components
         """
 
-        appendproctitle(self.name)
         log.info("Running Saline CherryPy Server")
 
         self.cherrypy_server(self.opts)

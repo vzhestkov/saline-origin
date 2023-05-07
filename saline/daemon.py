@@ -1,10 +1,10 @@
+import logging
 import os
 import pwd
 import signal
 import traceback
 
 from salt.cli.daemons import DaemonsMixin
-from salt.log.setup import logging
 from salt.utils.process import HAS_PSUTIL, notify_systemd
 from salt.utils.user import get_user
 from salt.utils.verify import check_user, verify_env, verify_log
@@ -58,7 +58,6 @@ class Saline(SalineOptionParser, DaemonsMixin):
         except OSError as error:
             self.environment_failure(error)
 
-        self.setup_logfile_logger()
         verify_log(self.config)
         log.info("Setting up the Saline")
 

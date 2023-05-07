@@ -7,6 +7,13 @@ import salt.utils.immutabletypes as immutabletypes
 import salt.utils.user
 
 from salt.config import _validate_opts
+from salt._logging import (
+    DFLT_LOG_DATEFMT,
+    DFLT_LOG_DATEFMT_LOGFILE,
+    DFLT_LOG_FMT_CONSOLE,
+    DFLT_LOG_FMT_JID,
+    DFLT_LOG_FMT_LOGFILE,
+)
 
 
 log = logging.getLogger(__name__)
@@ -21,12 +28,20 @@ VALID_OPTS = immutabletypes.freeze(
         "hash_type": str,
         # The file to send logging data to
         "log_file": str,
-        # The format of the messages of the log file
-        "log_fmt_logfile": str,
+        # The format to construct dates in log files
+        "log_datefmt": str,
+        # The dateformat for a given logfile
+        "log_datefmt_logfile": str,
+        # The format for console logs
+        "log_fmt_console": str,
+        # The format for a given log file
+        "log_fmt_logfile": (tuple, str),
         # The level of verbosity at which to log
         "log_level": str,
         # The log level to log to a given file
         "log_level_logfile": (type(None), str),
+        # A dictionary of logging levels
+        "log_granular_levels": dict,
         # Perform pre-flight verification steps before daemon startup, such as checking configuration
         # files and certain directories.
         "verify_env": bool,
@@ -54,6 +69,8 @@ VALID_OPTS = immutabletypes.freeze(
         "job_cleanup_after": int,
         # The replacement of blank value of mods to prevent passing to Prometheus
         "set_highstate_mods_in_metrics": str,
+        # Tell the loader to attempt to import *.pyx cython files if cython is available
+        "cython_enable": bool,
     }
 )
 
@@ -64,7 +81,11 @@ DEFAULT_SALINE_OPTS = immutabletypes.freeze(
         "extension_modules": os.path.join(salt.syspaths.CACHE_DIR, "saline", "extmods"),
         "hash_type": "sha256",
         "log_file": os.path.join(salt.syspaths.LOGS_DIR, "saline"),
-        "log_fmt_logfile": "%(asctime)s,%(msecs)03d [%(levelname)-8s][%(processName)-16s][%(process)s] %(message)s",
+        "log_datefmt": DFLT_LOG_DATEFMT,
+        "log_datefmt_logfile": DFLT_LOG_DATEFMT_LOGFILE,
+        "log_fmt_console": DFLT_LOG_FMT_CONSOLE,
+        "log_fmt_logfile": DFLT_LOG_FMT_LOGFILE,
+        "log_granular_levels": {},
         "log_level": "warning",
         "log_level_logfile": "warning",
         "verify_env": True,
@@ -85,6 +106,7 @@ DEFAULT_SALINE_OPTS = immutabletypes.freeze(
         "job_metrics_update_interval": 3,
         "job_cleanup_after": 1200,
         "set_highstate_mods_in_metrics": "",
+        "cython_enable": False,
     }
 )
 
