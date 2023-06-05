@@ -7,13 +7,24 @@ import salt.utils.immutabletypes as immutabletypes
 import salt.utils.user
 
 from salt.config import _validate_opts
-from salt._logging import (
-    DFLT_LOG_DATEFMT,
-    DFLT_LOG_DATEFMT_LOGFILE,
-    DFLT_LOG_FMT_CONSOLE,
-    DFLT_LOG_FMT_JID,
-    DFLT_LOG_FMT_LOGFILE,
-)
+try:
+    from salt._logging import (
+        DFLT_LOG_DATEFMT,
+        DFLT_LOG_DATEFMT_LOGFILE,
+        DFLT_LOG_FMT_CONSOLE,
+        DFLT_LOG_FMT_JID,
+        DFLT_LOG_FMT_LOGFILE,
+    )
+except ImportError:
+    # Reuired to be compatible with Salt 3004
+    DFLT_LOG_DATEFMT = "%H:%M:%S"
+    DFLT_LOG_DATEFMT_LOGFILE = "%Y-%m-%d %H:%M:%S"
+    DFLT_LOG_FMT_CONSOLE = "[%(levelname)-8s] %(message)s"
+    DFLT_LOG_FMT_JID = "[JID: %(jid)s]"
+    DFLT_LOG_FMT_LOGFILE = (
+        "%(asctime)s,%(msecs)03d [%(name)-17s:%(lineno)-4d][%(levelname)-8s][%(process)d]"
+        " %(message)s"
+    )
 
 
 log = logging.getLogger(__name__)
