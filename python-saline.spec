@@ -129,6 +129,7 @@ fi
 %dir %{_sysconfdir}/salt/saline.d
 %config %{_sysconfdir}/salt/saline
 %config %{_sysconfdir}/salt/saline.d/*.conf
+%exclude %{_sysconfdir}/salt/saline.d/restapi.conf
 %dir %{_sysconfdir}/salt/pki/saline
 %{_sbindir}/rcsalined
 %{_unitdir}/salined.service
