@@ -90,9 +90,9 @@ class EventParser:
         if trimmed:
             parsed_data["trimmed"] = trimmed
 
-        if (
-            tag_main == EventTags.SALT_BATCH
-            and tag_sub in (EventTags.SALT_BATCH_START, EventTags.SALT_BATCH_DONE)
+        if tag_main == EventTags.SALT_BATCH and tag_sub in (
+            EventTags.SALT_BATCH_START,
+            EventTags.SALT_BATCH_DONE,
         ):
             parsed_data["down_minions"] = data.get("down_minions", [])
 
@@ -125,6 +125,8 @@ class EventParser:
                     args[0],
                     args[1].get("test", False) is True,
                 )
+                if (args[1].get("test", False) is True) or fun == "state.test":
+                    parsed_data["test"] = True
 
         if (
             tag_main == EventTags.SALT_JOB
@@ -134,7 +136,6 @@ class EventParser:
             and "return" in data
             and isinstance(data["return"], (dict, list))
         ):
-
             if isinstance(data["return"], dict):
                 nchanges = 0
                 duration = 0
@@ -188,10 +189,6 @@ class EventParser:
                 for result, key in STATE_RESULTS:
                     if result in rcounts:
                         parsed_data[key] = rcounts[result]
-                if (
-                    None in rcounts and rcounts.get(None, 0) > 0
-                ) or fun == "state.test":
-                    parsed_data["test"] = True
                 parsed_data["changes"] = nchanges
             elif isinstance(data["return"], str):
                 parsed_data["changes"] = 1
