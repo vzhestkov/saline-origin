@@ -3,12 +3,12 @@
     <param name="url">https://github.com/vzhestkov/saline.git</param>
     <param name="scm">git</param>
     <param name="revision">main</param>
-    <param name="versionprefix">2023.11.06</param>
-    <param name="versionformat">%h</param>
+    <param name="versionformat">%ad.%at</param>
+    <param name="versionrewrite-pattern">(\d{4})(\d{2})(\d{2})\.\d*(\d{6})</param>
+    <param name="versionrewrite-replacement">\1.\2.\3.\4</param>
     <param name="exclude">.git</param>
     <param name="extract">*.spec</param>
     <param name="changesgenerate">enable</param>
-    <param name="changesauthor">Victor Zhestkov &lt;vzhestkov@suse.com&gt;</param>
   </service>
   <service name="extract_file" mode="manual">
     <param name="archive">*.obscpio</param>
