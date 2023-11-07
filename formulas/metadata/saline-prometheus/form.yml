@@ -1,0 +1,26 @@
+prometheus:
+  $type: namespace
+
+  saline_enabled:
+    $type: boolean
+    $name: Enable Saline scrape configuration
+    $default: false
+    $help: Add scrape configuration of Saline to Prometheus
+
+  scrape_configs:
+    $type: edit-group
+    $visible: false
+    $minItems: 1
+    $maxItems: 1
+    $prototype:
+      $type: group
+      $key:
+        $type: text
+        $default: saline
+      files:
+        $type: edit-group
+        $minItems: 1
+        $maxItems: 1
+        $prototype:
+          $type: text
+          $default: /etc/prometheus/saline.yml

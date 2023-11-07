@@ -1,0 +1,4 @@
+description:
+  Enable and configure Saline in Prometheus
+group: monitoring
+

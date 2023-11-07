@@ -4,6 +4,8 @@
 
 %{?!python_module:%define python_module() python3-%{**}}
 
+%define susemanager_data_dir %{_datadir}/susemanager
+
 Name:           python-saline
 Version:        0
 Release:        0
@@ -74,6 +76,11 @@ mv %{buildroot}%{_bindir}/salined %{buildroot}%{_bindir}/salined-%{$python_bin_s
 %fdupes %{buildroot}%{$python_sitelib}
 }
 
+install -D -d %{buildroot}%{susemanager_data_dir}/formulas/metadata
+install -D -d %{buildroot}%{susemanager_data_dir}/formulas/states
+cp -a formulas/metadata/* %{buildroot}%{susemanager_data_dir}/formulas/metadata/
+cp -a formulas/states/* %{buildroot}%{susemanager_data_dir}/formulas/states/
+
 %pre -n saline
 %service_add_pre salined.service
 
@@ -108,6 +115,12 @@ mv %{buildroot}%{_bindir}/salined %{buildroot}%{_bindir}/salined-%{$python_bin_s
 %ghost %config %{_sysconfdir}/salt/pki/saline/uyuni.key
 %{_sbindir}/rcsalined
 %{_unitdir}/salined.service
+%dir %{susemanager_data_dir}
+%dir %{susemanager_data_dir}/formulas
+%dir %{susemanager_data_dir}/formulas/metadata
+%dir %{susemanager_data_dir}/formulas/states
+%{susemanager_data_dir}/formulas/metadata/*
+%{susemanager_data_dir}/formulas/states/*
 %ghost %dir /var/log/salt
 %ghost /var/log/salt/saline
 %ghost /var/log/salt/saline-api-access.log

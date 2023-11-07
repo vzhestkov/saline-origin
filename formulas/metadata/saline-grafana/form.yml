@@ -1,0 +1,18 @@
+saline_grafana:
+  $type: namespace
+
+  dashboards:
+    $type: group
+    $help: Dashboards to install.
+
+    add_uyuni_saline_dashboard:
+      $type: boolean
+      $name: ${productName} server dashboard with Saline
+      $help: Add dashboard for monitoring an ${productName} server with Saline
+      $default: true
+
+    add_uyuni_saline_state_dashboard:
+      $type: boolean
+      $name: ${productName} Saline States Job dashboard
+      $help: Add dashboard for monitoring ${productName} Salt States Jobs
+      $default: true
