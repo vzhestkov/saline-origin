@@ -9,10 +9,7 @@
     <param name="exclude">.git</param>
     <param name="extract">*.spec</param>
     <param name="changesgenerate">enable</param>
-  </service>
-  <service name="extract_file" mode="manual">
-    <param name="archive">*.obscpio</param>
-    <param name="files">*</param>
+    <param name="changesauthor">Victor Zhestkov &lt;vzhestkov@suse.com&gt;</param>
   </service>
   <service name="set_version" mode="manual"/>
   <service name="tar" mode="buildtime"/>
