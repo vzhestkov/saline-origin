@@ -427,13 +427,14 @@ class CherryPySrv(SignalHandlingProcess):
                 )
                 return None
 
-        self.verify_certs(apiopts["ssl_crt"], apiopts["ssl_key"])
+        if "ssl_crt" in apiopts and "ssl_key" in apiopts:
+            self.verify_certs(apiopts["ssl_crt"], apiopts["ssl_key"])
 
-        cherrypy.server.ssl_module = "builtin"
-        cherrypy.server.ssl_certificate = apiopts["ssl_crt"]
-        cherrypy.server.ssl_private_key = apiopts["ssl_key"]
-        if "ssl_chain" in apiopts.keys():
-            cherrypy.server.ssl_certificate_chain = apiopts["ssl_chain"]
+            cherrypy.server.ssl_module = "builtin"
+            cherrypy.server.ssl_certificate = apiopts["ssl_crt"]
+            cherrypy.server.ssl_private_key = apiopts["ssl_key"]
+            if "ssl_chain" in apiopts.keys():
+                cherrypy.server.ssl_certificate_chain = apiopts["ssl_chain"]
 
         # Prevent propagating CherryPy logging to main saline log
         # in case if distinct log files specified in the config
