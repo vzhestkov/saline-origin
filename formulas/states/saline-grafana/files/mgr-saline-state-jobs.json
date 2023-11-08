@@ -919,61 +919,6 @@
         "skipUrlSync": false,
         "sort": 0,
         "type": "query"
-      },
-      {
-        "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
-        },
-        "definition": "label_values(salt_state_jobs{job=\"$job\",instance=\"$server:8216\"} , fun)",
-        "hide": 0,
-        "includeAll": true,
-        "label": "State Function",
-        "multi": false,
-        "name": "state_fun",
-        "options": [],
-        "query": {
-          "query": "label_values(salt_state_jobs{job=\"$job\",instance=\"$server:8216\"} , fun)",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
-        "type": "query"
-      },
-      {
-        "current": {
-          "isNone": true,
-          "selected": false,
-          "text": "None",
-          "value": ""
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "${DS_PROMETHEUS}"
-        },
-        "definition": "label_values(salt_state_jobs{job=\"$job\",instance=\"$server:8216\",fun=~\"$state_fun\"} , mods)",
-        "hide": 0,
-        "includeAll": false,
-        "label": "mods",
-        "multi": false,
-        "name": "state_mods",
-        "options": [],
-        "query": {
-          "query": "label_values(salt_state_jobs{job=\"$job\",instance=\"$server:8216\",fun=~\"$state_fun\"} , mods)",
-          "refId": "StandardVariableQuery"
-        },
-        "refresh": 2,
-        "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
-        "type": "query"
       }
     ]
   },
