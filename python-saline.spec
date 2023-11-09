@@ -58,6 +58,8 @@ install -Dpm 0644 salined.service %{buildroot}%{_unitdir}/salined.service
 install -Dd -m 0755 %{buildroot}%{_sbindir}
 ln -sv %{_sbindir}/service %{buildroot}%{_sbindir}/rcsalined
 
+install -Dpm 0755 scripts/saline-setup %{buildroot}%{_sbindir}/
+
 install -Dpm 0644 conf/logrotate.d/saline %{buildroot}%{_sysconfdir}/logrotate.d/saline
 
 install -D -d %{buildroot}%{_sysconfdir}/salt/saline.d
@@ -113,6 +115,7 @@ cp -a formulas/states/* %{buildroot}%{susemanager_data_dir}/formulas/states/
 %dir %{_sysconfdir}/salt/pki/saline
 %ghost %config %{_sysconfdir}/salt/pki/saline/uyuni.crt
 %ghost %config %{_sysconfdir}/salt/pki/saline/uyuni.key
+%{_sbindir}/saline-setup
 %{_sbindir}/rcsalined
 %{_unitdir}/salined.service
 %dir %{susemanager_data_dir}

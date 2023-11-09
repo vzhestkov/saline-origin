@@ -1,0 +1,480 @@
+#!/bin/bash
+
+SELF=$(basename $0)
+
+PRODUCT_NAME="$(python3 -c 'from spacewalk.common.rhnConfig import PRODUCT_NAME; print(PRODUCT_NAME)')"
+
+SALINE_USER="salt"
+SALINE_LISTEN_HOST="0.0.0.0"
+SALINE_LISTEN_PORT=8216
+SALINE_CONFIGURE_SSL="yes"
+SALINE_SSL_DEST_PATH="/etc/salt/pki/saline"
+SALINE_SSL_CERT_FILE="saline.crt"
+SALINE_SSL_KEY_FILE="saline.key"
+SALINE_CONF_DEST_PATH="/etc/salt/saline.d"
+SALINE_CONF_RESTAPI_FILE="${SALINE_CONF_DEST_PATH}/restapi.conf"
+SALINE_CONF_USER_FILE="${SALINE_CONF_DEST_PATH}/user.conf"
+SALINE_LOGS_DEST_PATH="/var/log/salt"
+SALINE_ACCESS_LOG_FILE="${SALINE_LOGS_DEST_PATH}/saline-api-access.log"
+SALINE_ERROR_LOG_FILE="${SALINE_LOGS_DEST_PATH}/saline-api-error.log"
+SALINE_SERVICE_NAME="salined.service"
+SALINE_SERVICE_ENABLE=""
+SALINE_SERVICE_START=""
+
+FORCE_YES=""
+
+UYUNI_DEFAULT_SSL_CERT="/etc/pki/tls/certs/spacewalk.crt"
+UYUNI_DEFAULT_SSL_KEY="/etc/pki/tls/private/spacewalk.key"
+
+help() {
+    echo ""
+    echo "Usage: ${SELF} run   [options]" >&2
+    echo "       ${SELF} check [options]" >&2
+    echo "       ${SELF} help" >&2
+    echo ""
+    echo "Options:"
+    echo "    -I --no-ssl                     Configure Saline web service with no SSL (INSECURE!)"
+    echo "    -c --ssl-cert <file path>       Path to public SSL certificate file"
+    echo "    -k --ssl-key <file path>        Path to private SSL key file"
+    echo "    -l --listen-host <IP address>   IP address of the host to listen on"
+    echo "    -p --listen-port <port>         Port number to listen on (default: 8216)"
+    echo "    -e --enable                     Start Saline service"
+    echo "    -d --disable                    Disable Saline service"
+    echo "    -s --start                      Start Saline service"
+    echo "    -S --STOP                       Stop Saline service"
+    echo "    -u --user <username>            Name of the user to check for"
+    echo "    -y --yes                        Force required actions with no asking"
+    echo ""
+}
+
+ask_yn() {
+    local prompt=$1
+    [[ "${FORCE_YES}" = "yes" ]] && return 0
+    while true; do
+        read -p "${prompt} (Y/N): " -r YN_ANSWER
+        case "${YN_ANSWER}" in
+            Y|y|yes|YES|Yes)
+                return 0
+                ;;
+            N|n|no|NO|No)
+                return 1
+                ;;
+            *)
+                echo "Warning: Please choose Y or N" >&2
+                ;;
+        esac
+    done
+}
+
+valid_ip() {
+    local ip=${1:-NO_IP_PROVIDED}
+    local IFS="."
+    local octs=($ip)
+    [[ $ip =~ ^[0-9]+(\.[0-9]+){3}$ ]] || return 1
+    for i in {0..3}; do
+        [[ "${octs[$i]}" -gt 255 ]] && return 1
+    done
+    return 0
+}
+
+valid_port() {
+    local port=${1:-NO_PORT_PROVIDED}
+    [[ $port =~ ^[0-9]+{4,5}$ ]] || return 1
+    if [ $port -le 1024 -o $port -gt 65535 ]; then
+        return 1
+    fi
+    return 0
+}
+
+check_opts() {
+    if [ "${SALINE_CONFIGURE_SSL}" = "no" -a -n "${SALINE_SSL_CERT}${SALINE_SSL_KEY}" ]; then
+        echo "Error: No need to specify SSL certificate and key file in case if --no-ssl (-I) was specified." >&2
+        exit 2
+    fi
+
+    id "${SALINE_USER}" > /dev/null 2>&1 || USER_NOT_FUND="!"
+    if [ "${USER_NOT_FUND}" = "!" ]; then
+        echo "Error: Unable to find user '${SALINE_USER}'." >&2
+        exit 4
+    fi
+
+    if [ -z "${SALINE_NEW_HOST}" ]; then
+        SALINE_NEW_HOST="${SALINE_LISTEN_HOST}"
+    fi
+
+    if [ -z "${SALINE_NEW_PORT}" ]; then
+        SALINE_NEW_PORT="${SALINE_LISTEN_PORT}"
+    fi
+
+    if ! valid_ip "${SALINE_NEW_HOST}";then
+        echo "Error: Invalid IP address specified '${SALINE_NEW_HOST}'." >&2
+        exit 5
+    fi
+
+    if ! valid_port "${SALINE_NEW_PORT}";then
+        echo "Error: Invalid port number specified '${SALINE_NEW_PORT}'. Must be > 1024 and < 65536" >&2
+        exit 6
+    fi
+}
+
+file_owner_mod() {
+    local check=$1
+    local file_source=$2
+    local file_path=$3
+    local file_owner=$4
+    local file_mod=$5
+    local file_desc=$6
+    local show_diff=${7:-0}
+    local changes=0
+    local diff_out
+    diff_out=$(diff -urN "${file_path}" "${file_source}")
+    local needs_update=$?
+    if [ $needs_update -ne 0 ]; then
+        changes=$(($changes+1))
+        if [ $show_diff -gt 0 ]; then
+            diff_out=$(echo "${diff_out}" | sed "s!^+++ ${file_source}!+++ ${file_path}.NEW!")
+        fi
+        if [ $check -eq 1 ]; then
+            if [ -f "${file_path}" ]; then
+                echo "${file_desc} file '${file_path}' is different, needs to be updated."
+                if [ $show_diff -gt 0 ]; then
+                    echo "$diff_out"
+                    echo ""
+                fi
+            else
+                echo "${file_desc} file '${file_path}' doesn't exist, needs to be created."
+            fi
+        else
+            echo "Updating ${file_desc} file '${file_path}' ..."
+            if [ $show_diff -gt 0 ]; then
+                echo "$diff_out"
+                echo ""
+            fi
+            cat "${file_source}" > "${file_path}"
+            [[ -z "${file_owner}" ]] || chown "${file_owner}" "${file_path}"
+            [[ -z "${file_mod}" ]] || chmod "${file_mod}" "${file_path}"
+        fi
+    fi
+    local actual_file_owner=$(stat --format "%U:%G" "${file_path}" 2> /dev/null)
+    if [ -f "${file_path}" -a "${actual_file_owner}" != "${file_owner}" -a -n "${file_owner}" ]; then
+        changes=$(($changes+1))
+        if [ $check -eq 1 ]; then
+            echo "${file_desc} file '${file_path}' owner '${actual_file_owner}' is different than expected '${file_owner}'."
+        else
+            echo "Changing ${file_desc} file '${file_path}' owner from '${actual_file_owner}' to '${file_owner}' ..."
+            chown "${file_owner}" "${file_path}"
+        fi
+    fi
+    local actual_file_mod=$(stat --format "%a" "${file_path}" 2> /dev/null)
+    if [ -f "${file_path}" -a "${actual_file_mod}" != "${file_mod}" -a -n "${file_mod}" ]; then
+        changes=$(($changes+1))
+        if [ $check -eq 1 ]; then
+            echo "${file_desc} file '${file_path}' mod '${actual_file_mod}' is different than expected '${file_mod}'."
+        else
+            echo "Changing ${file_desc} file '${file_path}' owner from '${actual_file_mod}' to '${file_mod}' ..."
+            chmod "${file_mod}" "${file_path}"
+        fi
+    fi
+    if [ $changes -gt 0 ]; then
+        return 1
+    fi
+}
+
+ssl_files_update() {
+    local check=${1:-0}
+    local changes=0
+
+    if [ "${SALINE_CONFIGURE_SSL}" != "yes" ]; then
+        return 0
+    fi
+    local owner_check="${SALINE_USER}:$(id -ng ${SALINE_USER})"
+
+    if [ $check -eq 0 ]; then
+        if [ ! -f "${SALINE_SSL_DEST_PATH}/${SALINE_SSL_CERT_FILE}" -o ! -f "${SALINE_SSL_DEST_PATH}/${SALINE_SSL_KEY_FILE}" ]; then
+            if [ -z "${SALINE_SSL_CERT}${SALINE_SSL_KEY}" ] && ask_yn "There are no SSL certificate and key specified. Do you want to use the SSL certificate and the key from ${PRODUCT_NAME}?"; then
+                SALINE_SSL_CERT="${UYUNI_DEFAULT_SSL_CERT}"
+                SALINE_SSL_KEY="${UYUNI_DEFAULT_SSL_KEY}"
+            fi
+        fi
+        if [ -n "${SALINE_SSL_CERT}" -a ! -f "${SALINE_SSL_CERT}" ]; then
+            echo "Error: SSL certificate file '${SALINE_SSL_CERT}' is not a regular file." >&2
+            exit 3
+        fi
+        if [ -n "${SALINE_SSL_KEY}" -a ! -f "${SALINE_SSL_KEY}" ]; then
+            echo "Error: SSL key file '${SALINE_SSL_KEY}' is not a regular file." >&2
+            exit 3
+        fi
+    else
+        if [ -z "${SALINE_SSL_CERT}${SALINE_SSL_KEY}" ]; then
+            SALINE_SSL_CERT="${UYUNI_DEFAULT_SSL_CERT}"
+            SALINE_SSL_KEY="${UYUNI_DEFAULT_SSL_KEY}"
+        fi
+    fi
+
+    if [ -z "${SALINE_SSL_CERT}${SALINE_SSL_KEY}" ]; then
+        return 0
+    fi
+
+    file_owner_mod $check "${SALINE_SSL_CERT}" "${SALINE_SSL_DEST_PATH}/${SALINE_SSL_CERT_FILE}" "${owner_check}" "644" "SSL certificate"
+    changes=$(($changes+$?))
+
+    file_owner_mod $check "${SALINE_SSL_KEY}" "${SALINE_SSL_DEST_PATH}/${SALINE_SSL_KEY_FILE}" "${owner_check}" "600" "SSL private key"
+    changes=$(($changes+$?))
+
+    if [ $changes -gt 0 ]; then
+        return 1
+    fi
+    return 0
+}
+
+restapi_config() {
+    local check=${1:-0}
+    local changes=0
+    local TMP_SALINE_CONFIG=$(mktemp)
+    echo "restapi:" > "${TMP_SALINE_CONFIG}"
+    echo "  host: ${SALINE_NEW_HOST}" >> "${TMP_SALINE_CONFIG}"
+    [[ "${SALINE_NEW_PORT}" = "8216" ]] || echo "  port: ${SALINE_NEW_PORT}" >> "${TMP_SALINE_CONFIG}"
+    if [ "${SALINE_CONFIGURE_SSL}" = "yes" ]; then
+        echo "  ssl_crt: ${SALINE_SSL_DEST_PATH}/${SALINE_SSL_CERT_FILE}" >> "${TMP_SALINE_CONFIG}"
+        echo "  ssl_key: ${SALINE_SSL_DEST_PATH}/${SALINE_SSL_KEY_FILE}" >> "${TMP_SALINE_CONFIG}"
+    else
+        echo "  disable_ssl: true" >> "${TMP_SALINE_CONFIG}"
+    fi
+    echo "  log_access_file: ${SALINE_ACCESS_LOG_FILE}" >> "${TMP_SALINE_CONFIG}"
+    echo "  log_error_file: ${SALINE_ERROR_LOG_FILE}" >> "${TMP_SALINE_CONFIG}"
+    file_owner_mod $check "${TMP_SALINE_CONFIG}" "${SALINE_CONF_RESTAPI_FILE}" "" "" "Saline restapi config" 1
+    changes=$(($changes+$?))
+    rm -f "${TMP_SALINE_CONFIG}"
+    if [ $changes -gt 0 ]; then
+        return 1
+    fi
+    return 0
+}
+
+user_config() {
+    local check=${1:-0}
+    local changes=0
+    local TMP_SALINE_CONFIG=$(mktemp)
+    echo "user: ${SALINE_USER}" > "${TMP_SALINE_CONFIG}"
+    file_owner_mod $check "${TMP_SALINE_CONFIG}" "${SALINE_CONF_USER_FILE}" "" "" "Saline user config" 1
+    changes=$(($changes+$?))
+    rm -f "${TMP_SALINE_CONFIG}"
+    if [ $changes -gt 0 ]; then
+        return 1
+    fi
+    return 0
+}
+
+service_check() {
+    local check=$1
+    local pre_changes=$2
+    local changes=0
+    local is_active=$(systemctl is-active "${SALINE_SERVICE_NAME}")
+    local is_enabled=$(systemctl is-enabled "${SALINE_SERVICE_NAME}")
+    if [ $is_enabled != "enabled" -a "${SALINE_SERVICE_ENABLE}" != "no" ]; then
+        if [ $check -eq 1 ]; then
+            echo "Saline service '${SALINE_SERVICE_NAME}' is not enabled. Need to enable it."
+            changes=$(($changes+1))
+        else
+            if [ "${SALINE_SERVICE_ENABLE}" = "yes" ] || ask_yn "Saline service is not enabled. Do you want to enable it?"; then
+                echo "Enabling Saline service '${SALINE_SERVICE_NAME}' ..."
+                systemctl enable "${SALINE_SERVICE_NAME}"
+                changes=$(($changes+1))
+            fi
+        fi
+    elif [ $is_enabled = "enabled" -a "${SALINE_SERVICE_ENABLE}" = "no" ]; then
+        if [ $check -eq 1 ]; then
+            echo "Saline service '${SALINE_SERVICE_NAME}' is enabled. Need to be disabled."
+        else
+            echo "Disabling Saline service '${SALINE_SERVICE_NAME}' ..."
+            systemctl disable "${SALINE_SERVICE_NAME}"
+        fi
+        changes=$(($changes+1))
+    fi
+    if [ $is_active = "active" -a $pre_changes -gt 0 ]; then
+        if [ $check -eq 1 ]; then
+            echo "Saline service '${SALINE_SERVICE_NAME}' is currently active, and such changes will require its restart."
+            changes=$(($changes+1))
+        else
+            if ask_yn "The changes made requires Saline serivce restart. Do you want to restart it now?"; then
+                echo "Restarting Saline service '${SALINE_SERVICE_NAME}' ..."
+                systemctl restart "${SALINE_SERVICE_NAME}"
+                changes=$(($changes+1))
+            fi
+        fi
+    elif [ $is_active != "active" -a ! "${SALINE_SERVICE_START}" = "no" ]; then
+        if [ $check -eq 1 ]; then
+            echo "Saline service '${SALINE_SERVICE_NAME}' is not active. Need to start it."
+            changes=$(($changes+$?))
+        else
+            if [ "${SALINE_SERVICE_START}" = "yes" ] || ask_yn "Saline service is not active. Do you want to start it?"; then
+                echo "Starting Saline service '${SALINE_SERVICE_NAME}' ..."
+                systemctl start "${SALINE_SERVICE_NAME}"
+                changes=$(($changes+1))
+            fi
+        fi
+    elif [ $is_active = "active" -a "${SALINE_SERVICE_START}" = "no" ]; then
+        if [ $check -eq 1 ]; then
+            echo "Saline service '${SALINE_SERVICE_NAME}' is active. Need to stop it."
+        else
+            echo "Stopping Saline service '${SALINE_SERVICE_NAME}' ..."
+            systemctl stop "${SALINE_SERVICE_NAME}"
+        fi
+        changes=$(($changes+1))
+    fi
+    if [ $changes -gt 0 ]; then
+        return 1
+    fi
+    return 0
+}
+
+run() {
+    local check=${1:-0}
+    local changes=0
+    ssl_files_update $check
+    changes=$(($changes+$?))
+    restapi_config $check
+    changes=$(($changes+$?))
+    user_config $check
+    changes=$(($changes+$?))
+    service_check $check $changes
+    changes=$(($changes+$?))
+    if [ $changes -eq 0 ]; then
+        if [ $check -eq 1 ]; then
+            echo "No changes required."
+            return 0
+        fi
+        echo "No changes were made."
+    else
+        if [ $check -eq 1 ]; then
+            exit 100
+        fi
+    fi
+}
+
+check() {
+    run 1
+}
+
+read_configs() {
+    local read_host="$(sed -n -E 's/^\s+host: (.*)/\1/p' ""${SALINE_CONF_RESTAPI_FILE}"")"
+    local read_port="$(sed -n -E 's/^\s+port: (.*)/\1/p' ""${SALINE_CONF_RESTAPI_FILE}"")"
+    local read_user="$(sed -n -E 's/^user: (.*)/\1/p' ""${SALINE_CONF_USER_FILE}"")"
+    if [ -n "$read_host" ]; then
+        SALINE_LISTEN_HOST="$read_host"
+    fi
+    if [ -n "$read_port" ]; then
+        SALINE_LISTEN_PORT="$read_port"
+    fi
+    if [ -n "$read_user" ]; then
+        SALINE_USER="$read_user"
+    fi
+}
+
+read_configs
+
+OPTS=$(getopt --longoptions=no-ssl,ssl-cert:,ssl-key:,listen-host:,listen-port:,enable,disable,start,stop,user:,yes -n ${0##*/} -- Ic:k:l:p:edsSu:y "$@")
+
+if [ $? != 0 ]; then echo "Error: unable to read command line options" >&2; exit 1; fi
+
+eval set -- "$OPTS"
+
+while true; do
+    case "$1" in
+        -I|--no-ssl)
+            SALINE_CONFIGURE_SSL="no"
+            ;;
+        -c|--ssl-cert)
+            SALINE_SSL_CERT=$2
+            shift
+            ;;
+        -k|--ssl-key)
+            SALINE_SSL_KEY=$2
+            shift
+            ;;
+        -l|--listen-host)
+            if [ -n "${SALINE_NEW_HOST}" ]; then
+                echo "Error: More than one hosts specified to listen on. Only one can be used." >&2
+                exit 1
+            fi
+            SALINE_NEW_HOST=$2
+            shift
+            ;;
+        -p|--listen-port)
+            if [ -n "${SALINE_NEW_PORT}" ]; then
+                echo "Error: More than one port specified to listen on. Only one can be used." >&2
+                exit 1
+            fi
+            SALINE_NEW_PORT=$2
+            shift
+            ;;
+        -e|--enable)
+            if [ -n "${SALINE_SERVICE_ENABLE}" -a "${SALINE_SERVICE_ENABLE}" = "no" ]; then
+                echo "Error: --enable (-e) and --disable (-d) have opposite meaning. Choose only one." >&2
+                exit 1
+            fi
+            SALINE_SERVICE_ENABLE="yes"
+            ;;
+        -d|--disable)
+            if [ -n "${SALINE_SERVICE_ENABLE}" -a "${SALINE_SERVICE_ENABLE}" = "yes" ]; then
+                echo "Error: --enable (-e) and --disable (-d) have opposite meaning. Choose only one." >&2
+                exit 1
+            fi
+            SALINE_SERVICE_ENABLE="no"
+            ;;
+        -s|--start)
+            if [ -n "${SALINE_SERVICE_START}" -a "${SALINE_SERVICE_START}" = "no" ]; then
+                echo "Error: --start (-s) and --stop (-S) have opposite meaning. Choose only one." >&2
+                exit 1
+            fi
+            SALINE_SERVICE_START="yes"
+            ;;
+        -S|--stop)
+            if [ -n "${SALINE_SERVICE_START}" -a "${SALINE_SERVICE_START}" = "yes" ]; then
+                echo "Error: --start (-s) and --stop (-S) have opposite meaning. Choose only one." >&2
+                exit 1
+            fi
+            SALINE_SERVICE_START="no"
+            ;;
+        -u|--user)
+            SALINE_USER=$2
+            shift
+            ;;
+        -y|--yes)
+            FORCE_YES="yes"
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "Error: Unable to parse: $1" >&2
+            exit 1
+            ;;
+    esac
+    shift
+done
+
+CMD=$1
+shift
+
+UNPARSED=$(echo -e "$@" | tr -d '[:space:]')
+if [ "${UNPARSED}" != "" ]; then
+    echo "Error: Unable to parse '$@' for command '$CMD'" >&2
+    exit 1
+fi
+
+check_opts
+
+case $CMD in
+        run)     run
+            ;;
+        check)   check
+            ;;
+        help|"") help
+            ;;
+        *)
+            echo "Error: Unknown command '$CMD'" >&2
+            exit 1
+            ;;
+esac
