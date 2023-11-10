@@ -4,7 +4,7 @@
 
 1. Add saline repository to the Uyuni server:
    ```
-   zypper ar https://download.opensuse.org/repositories/home:/vzhestkov:/saline/15.4/home:vzhestkov:saline.repo
+   zypper ar https://download.opensuse.org/repositories/home:/vizhestkov:/saline-release/15.5/home:vizhestkov:saline-release.repo
    ```
 
 2. Install saline package to the Uyuni server:
@@ -12,36 +12,18 @@
    zypper in saline
    ```
 
-3. Enable and start salined service:
+3. To run the initial configuration the following command can be used:
    ```
-   systemctl enable --now salined.service
+   saline-setup run
    ```
-   The service is already preconfigured to work on the Uyuni server
-
-4. Create the salt configuration channel (`Configuration -> Channels -> + Create State Channel`) with the following contents in init.sls:
+   It will ask some questions to configure the service, or you can also run it with `-y` parameter to accept defaults the following way:
    ```
-   saline-prometheus-cfg:
-     file.managed:
-     - name: /etc/prometheus/saline.yml
-     - contents: |
-         - targets:
-           - {{ salt['pillar.get']('mgr_server') }}:8216
-           labels:
-             __scheme__: https
-     - require_in:
-       - file: config_file
+   saline-setup run -y
    ```
-   Or copy it from [saline-prometheus-config.sls](https://github.com/vzhestkov/saline/blob/main/prometheus/saline-prometheus-config.sls).
 
-5. Subscribe the Uyuni Proxy server system profile to the salt channel created in previous step (`Configuration -> Manage Configuration Channels -> Subscribe to Channels`).
+4. Prometheus and Grafana can be configured with `Saline Prometheus` and `Saline Grafana` by adding them in the `Monitoring` section of `Formulas -> Configuration` page of the client with Prometheus and Grafana deployed on.
 
-6. Add `User defined scrape configurations` to the Prometheus formula in the Uyuni Proxy server system profile (`Formulas -> Prometheus -> User defined scrape configurations`):
-
-   Job name: `saline`
-
-   Files: `/etc/prometheus/saline.yml`
-
-7. The Grafana dashboard examples can be taken from [Uyuni-with-Saline.json](https://github.com/vzhestkov/saline/blob/main/grafana/Uyuni-with-Saline.json) and [Saline-State-Jobs.json](https://github.com/vzhestkov/saline/blob/main/grafana/Saline-State-Jobs.json)
+6. The configuration for Prometheus and the dashboards of Grafana will be deployed on applying highstate to the client.
 
 ## Grafana Dashboard examples
 
