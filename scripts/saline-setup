@@ -7,7 +7,8 @@ PRODUCT_NAME="$(python3 -c 'from spacewalk.common.rhnConfig import PRODUCT_NAME;
 SALINE_USER="salt"
 SALINE_LISTEN_HOST="0.0.0.0"
 SALINE_LISTEN_PORT=8216
-SALINE_CONFIGURE_SSL="yes"
+SALINE_CONFIGURE_SSL=""
+SALINE_DEFAULT_CONFIGURE_SSL="yes"
 SALINE_SSL_DEST_PATH="/etc/salt/pki/saline"
 SALINE_SSL_CERT_FILE="saline.crt"
 SALINE_SSL_KEY_FILE="saline.key"
@@ -33,6 +34,7 @@ help() {
     echo "       ${SELF} help" >&2
     echo ""
     echo "Options:"
+    echo "    --ssl                           Configure Saline web service with SSL (default)"
     echo "    -I --no-ssl                     Configure Saline web service with no SSL (INSECURE!)"
     echo "    -c --ssl-cert <file path>       Path to public SSL certificate file"
     echo "    -k --ssl-key <file path>        Path to private SSL key file"
@@ -87,6 +89,10 @@ valid_port() {
 }
 
 check_opts() {
+    if [ -z "${SALINE_CONFIGURE_SSL}" ]; then
+        SALINE_CONFIGURE_SSL="${SALINE_DEFAULT_CONFIGURE_SSL}"
+    fi
+
     if [ "${SALINE_CONFIGURE_SSL}" = "no" -a -n "${SALINE_SSL_CERT}${SALINE_SSL_KEY}" ]; then
         echo "Error: No need to specify SSL certificate and key file in case if --no-ssl (-I) was specified." >&2
         exit 2
@@ -359,6 +365,7 @@ check() {
 read_configs() {
     local read_host="$(sed -n -E 's/^\s+host: (.*)/\1/p' ""${SALINE_CONF_RESTAPI_FILE}"")"
     local read_port="$(sed -n -E 's/^\s+port: (.*)/\1/p' ""${SALINE_CONF_RESTAPI_FILE}"")"
+    local read_nossl="$(sed -n -E 's/^\s+disable_ssl: (.*)/\1/p' ""${SALINE_CONF_RESTAPI_FILE}"")"
     local read_user="$(sed -n -E 's/^user: (.*)/\1/p' ""${SALINE_CONF_USER_FILE}"")"
     if [ -n "$read_host" ]; then
         SALINE_LISTEN_HOST="$read_host"
@@ -369,11 +376,14 @@ read_configs() {
     if [ -n "$read_user" ]; then
         SALINE_USER="$read_user"
     fi
+    if [ "$read_nossl" = "True" -o "$read_nossl" = "true" ]; then
+        SALINE_DEFAULT_CONFIGURE_SSL="no"
+    fi
 }
 
 read_configs
 
-OPTS=$(getopt --longoptions=no-ssl,ssl-cert:,ssl-key:,listen-host:,listen-port:,enable,disable,start,stop,user:,yes -n ${0##*/} -- Ic:k:l:p:edsSu:y "$@")
+OPTS=$(getopt --longoptions=ssl,no-ssl,ssl-cert:,ssl-key:,listen-host:,listen-port:,enable,disable,start,stop,user:,yes -n ${0##*/} -- Ic:k:l:p:edsSu:y "$@")
 
 if [ $? != 0 ]; then echo "Error: unable to read command line options" >&2; exit 1; fi
 
@@ -381,7 +391,18 @@ eval set -- "$OPTS"
 
 while true; do
     case "$1" in
+        --ssl)
+            if [ -n "${SALINE_CONFIGURE_SSL}" -a "${SALINE_CONFIGURE_SSL}" = "no" ]; then
+                echo "Error: --ssl and --no-ssl (-I) have opposite meaning. Choose only one." >&2
+                exit 1
+            fi
+            SALINE_CONFIGURE_SSL="yes"
+            ;;
         -I|--no-ssl)
+            if [ -n "${SALINE_CONFIGURE_SSL}" -a "${SALINE_CONFIGURE_SSL}" = "yes" ]; then
+                echo "Error: --ssl and --no-ssl (-I) have opposite meaning. Choose only one." >&2
+                exit 1
+            fi
             SALINE_CONFIGURE_SSL="no"
             ;;
         -c|--ssl-cert)
