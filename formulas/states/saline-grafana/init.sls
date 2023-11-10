@@ -20,8 +20,9 @@
 {%- if salt['pillar.get']('saline_grafana:dashboards:add_uyuni_saline_state_dashboard', False) %}
 /etc/grafana/provisioning/dashboards/mgr-saline-state-jobs.json:
   file.managed:
-    - source: "salt://saline-grafana/files/mgr-saline-state-jobs.json"
+    - source: "salt://saline-grafana/files/mgr-saline-state-jobs.json.jinja"
     - makedirs: True
+    - template: jinja
     - defaults:
       product_name: {{ product_name }}
 {%- else %}

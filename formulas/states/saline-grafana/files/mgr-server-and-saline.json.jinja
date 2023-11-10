@@ -1971,7 +1971,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "rate(salt_events_total{instance=~\"$server:8216\"}[5m])",
+          "expr": "rate(salt_events_total{instance=~\"$server:$saline_port\"}[5m])",
           "legendFormat": "Salt events",
           "range": true,
           "refId": "SaltEvents"
@@ -1982,7 +1982,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(salt_events_tags_funcs{instance=\"$server:8216\",tag=\"salt/job/*/new\",fun=~\"state.*\"}[5m]))",
+          "expr": "sum(rate(salt_events_tags_funcs{instance=\"$server:$saline_port\",tag=\"salt/job/*/new\",fun=~\"state.*\"}[5m]))",
           "hide": false,
           "legendFormat": "States apply requests",
           "range": true,
@@ -1994,7 +1994,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(salt_events_tags_funcs{instance=\"$server:8216\",tag=\"salt/job/*/ret/*\",fun=~\"state.*\"}[5m]))",
+          "expr": "sum(rate(salt_events_tags_funcs{instance=\"$server:$saline_port\",tag=\"salt/job/*/ret/*\",fun=~\"state.*\"}[5m]))",
           "hide": false,
           "legendFormat": "States applied",
           "range": true,
@@ -2006,7 +2006,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "rate(salt_events_tags_funcs{instance=\"$server:8216\",tag=\"salt/job/*/new\",fun=\"test.ping\"}[5m])",
+          "expr": "rate(salt_events_tags_funcs{instance=\"$server:$saline_port\",tag=\"salt/job/*/new\",fun=\"test.ping\"}[5m])",
           "hide": false,
           "legendFormat": "Test ping requests",
           "range": true,
@@ -2018,7 +2018,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "rate(salt_events_tags_funcs{instance=\"$server:8216\",tag=\"salt/job/*/ret/*\",fun=\"test.ping\"}[5m])",
+          "expr": "rate(salt_events_tags_funcs{instance=\"$server:$saline_port\",tag=\"salt/job/*/ret/*\",fun=\"test.ping\"}[5m])",
           "hide": false,
           "legendFormat": "Test ping returns",
           "range": true,
@@ -2030,7 +2030,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "rate(salt_events_tags_funcs{instance=\"$server:8216\",tag=\"salt/job/*/new\",fun=\"mgractionchains.resume\"}[5m])",
+          "expr": "rate(salt_events_tags_funcs{instance=\"$server:$saline_port\",tag=\"salt/job/*/new\",fun=\"mgractionchains.resume\"}[5m])",
           "hide": false,
           "legendFormat": "Action chains resume requests",
           "range": true,
@@ -2042,7 +2042,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "rate(salt_events_tags_funcs{instance=\"$server:8216\",tag=\"salt/job/*/ret/*\",fun=\"mgractionchains.resume\"}[5m])",
+          "expr": "rate(salt_events_tags_funcs{instance=\"$server:$saline_port\",tag=\"salt/job/*/ret/*\",fun=\"mgractionchains.resume\"}[5m])",
           "hide": false,
           "legendFormat": "Action chains resume returns",
           "range": true,
@@ -2054,7 +2054,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "rate(salt_events_tags_funcs{instance=\"$server:8216\",tag=\"salt/job/*/new\",fun=\"saltutil.find_job\"}[5m])",
+          "expr": "rate(salt_events_tags_funcs{instance=\"$server:$saline_port\",tag=\"salt/job/*/new\",fun=\"saltutil.find_job\"}[5m])",
           "hide": false,
           "legendFormat": "Find job requests",
           "range": true,
@@ -2066,7 +2066,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "rate(salt_events_tags_funcs{instance=\"$server:8216\",tag=\"salt/job/*/ret/*\",fun=\"saltutil.find_job\"}[5m])",
+          "expr": "rate(salt_events_tags_funcs{instance=\"$server:$saline_port\",tag=\"salt/job/*/ret/*\",fun=\"saltutil.find_job\"}[5m])",
           "hide": false,
           "legendFormat": "Find job returns",
           "range": true,
@@ -2079,7 +2079,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum(rate(salt_events_tags_funcs{instance=\"$server:8216\",tag=\"salt/job/*/new\",fun=~\"grains.*\"}[5m]))",
+          "expr": "sum(rate(salt_events_tags_funcs{instance=\"$server:$saline_port\",tag=\"salt/job/*/new\",fun=~\"grains.*\"}[5m]))",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -2093,7 +2093,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(salt_events_tags_funcs{instance=\"$server:8216\",tag=\"salt/job/*/ret/*\",fun=~\"grains.*\"}[5m]))",
+          "expr": "sum(rate(salt_events_tags_funcs{instance=\"$server:$saline_port\",tag=\"salt/job/*/ret/*\",fun=~\"grains.*\"}[5m]))",
           "hide": false,
           "legendFormat": "Grains returns",
           "range": true,
@@ -2105,7 +2105,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "rate(salt_events_tags{instance=\"$server:8216\",tag=\"salt/batch/*/start\"}[5m])",
+          "expr": "rate(salt_events_tags{instance=\"$server:$saline_port\",tag=\"salt/batch/*/start\"}[5m])",
           "hide": false,
           "legendFormat": "Salt batch start",
           "range": true,
@@ -2117,7 +2117,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "rate(salt_events_tags{instance=\"$server:8216\",tag=\"salt/batch/*/done\"}[5m])",
+          "expr": "rate(salt_events_tags{instance=\"$server:$saline_port\",tag=\"salt/batch/*/done\"}[5m])",
           "hide": false,
           "legendFormat": "Salt batch done",
           "range": true,
@@ -2129,7 +2129,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "rate(salt_events_tags{instance=\"$server:8216\",tag=\"salt/auth\"}[5m])",
+          "expr": "rate(salt_events_tags{instance=\"$server:$saline_port\",tag=\"salt/auth\"}[5m])",
           "hide": false,
           "legendFormat": "Salt auth",
           "range": true,
@@ -2141,7 +2141,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sgn(round(increase(salt_events_tags_funcs{instance=\"$server:8216\",tag=\"salt/key\",fun=\"delete\"}[$__rate_interval]))) * 3",
+          "expr": "sgn(round(increase(salt_events_tags_funcs{instance=\"$server:$saline_port\",tag=\"salt/key\",fun=\"delete\"}[$__rate_interval]))) * 3",
           "hide": false,
           "legendFormat": "Salt key delete",
           "range": true,
@@ -2153,7 +2153,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sgn(round(increase(salt_events_trimmed_total{instance=\"$server:8216\"}[$__rate_interval]))) * 5",
+          "expr": "sgn(round(increase(salt_events_trimmed_total{instance=\"$server:$saline_port\"}[$__rate_interval]))) * 5",
           "hide": false,
           "legendFormat": "Values trimmed",
           "range": true,
@@ -2353,7 +2353,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "salt_minions{instance=\"$server:8216\",status=\"seen\"}",
+          "expr": "salt_minions{instance=\"$server:$saline_port\",status=\"seen\"}",
           "instant": false,
           "legendFormat": "seen",
           "range": true,
@@ -2366,7 +2366,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "salt_minions{instance=\"$server:8216\",status=\"active_1m\"}",
+          "expr": "salt_minions{instance=\"$server:$saline_port\",status=\"active_1m\"}",
           "hide": false,
           "instant": false,
           "legendFormat": "active 1m",
@@ -2380,7 +2380,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "salt_minions{instance=\"$server:8216\",status=\"active_5m\"}",
+          "expr": "salt_minions{instance=\"$server:$saline_port\",status=\"active_5m\"}",
           "hide": false,
           "instant": false,
           "legendFormat": "active 5m",
@@ -2394,7 +2394,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "salt_minions{instance=\"$server:8216\",status=\"active_15m\"}",
+          "expr": "salt_minions{instance=\"$server:$saline_port\",status=\"active_15m\"}",
           "hide": false,
           "instant": false,
           "legendFormat": "active 15m",
@@ -2408,7 +2408,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "salt_minions{instance=\"$server:8216\",status=\"active_1h\"}",
+          "expr": "salt_minions{instance=\"$server:$saline_port\",status=\"active_1h\"}",
           "hide": false,
           "instant": false,
           "legendFormat": "active 1h",
@@ -2422,7 +2422,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "salt_minions{instance=\"$server:8216\",status=\"active_ever\"}",
+          "expr": "salt_minions{instance=\"$server:$saline_port\",status=\"active_ever\"}",
           "hide": false,
           "instant": false,
           "legendFormat": "active ever",
@@ -2436,7 +2436,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "salt_minions{instance=\"$server:8216\",status=\"offline\"}",
+          "expr": "salt_minions{instance=\"$server:$saline_port\",status=\"offline\"}",
           "hide": false,
           "instant": false,
           "legendFormat": "offline",
@@ -2541,7 +2541,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "round(increase(salt_events_tags_funcs{instance=\"$server:8216\",tag=~\"salt/job/\\\\*/new|salt/batch/\\\\*/start|salt/wheel/\\\\*/new\"}[$__rate_interval]))",
+          "expr": "round(increase(salt_events_tags_funcs{instance=\"$server:$saline_port\",tag=~\"salt/job/\\\\*/new|salt/batch/\\\\*/start|salt/wheel/\\\\*/new\"}[$__rate_interval]))",
           "interval": "2m",
           "legendFormat": "tag:{{tag}} fun:{{fun}}",
           "range": true,
@@ -2553,7 +2553,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "round(increase(salt_events_tags_funcs{instance=\"$server:8216\",tag=~\"salt/job/\\\\*/ret/\\\\*|salt/batch/\\\\*/done|salt/wheel/\\\\*/ret|salt/auth\"}[$__rate_interval]))",
+          "expr": "round(increase(salt_events_tags_funcs{instance=\"$server:$saline_port\",tag=~\"salt/job/\\\\*/ret/\\\\*|salt/batch/\\\\*/done|salt/wheel/\\\\*/ret|salt/auth\"}[$__rate_interval]))",
           "hide": false,
           "interval": "2m",
           "legendFormat": "tag:{{tag}} fun:{{fun}}",
@@ -2711,7 +2711,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "round(sum(increase(salt_state_applies_status{instance=\"$server:8216\",status=~\"succeeded.*\"}[$__rate_interval])))",
+          "expr": "round(sum(increase(salt_state_applies_status{instance=\"$server:$saline_port\",status=~\"succeeded.*\"}[$__rate_interval])))",
           "hide": false,
           "interval": "2m",
           "legendFormat": "States succeeded",
@@ -2724,7 +2724,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "round(sum(increase(salt_state_applies_status{instance=\"$server:8216\",status=~\"failed.*\"}[$__rate_interval])))",
+          "expr": "round(sum(increase(salt_state_applies_status{instance=\"$server:$saline_port\",status=~\"failed.*\"}[$__rate_interval])))",
           "hide": false,
           "interval": "2m",
           "legendFormat": "States failed",
@@ -2737,7 +2737,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "round(sum(increase(salt_state_applies_status{instance=\"$server:8216\",status=~\".*_warnings\"}[$__rate_interval])))",
+          "expr": "round(sum(increase(salt_state_applies_status{instance=\"$server:$saline_port\",status=~\".*_warnings\"}[$__rate_interval])))",
           "hide": false,
           "interval": "2m",
           "legendFormat": "States warnings",
@@ -2750,7 +2750,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "round(sum(increase(salt_state_applies_status{instance=\"$server:8216\",status=\"errors\"}[$__rate_interval])))",
+          "expr": "round(sum(increase(salt_state_applies_status{instance=\"$server:$saline_port\",status=\"errors\"}[$__rate_interval])))",
           "hide": false,
           "interval": "2m",
           "legendFormat": "States errors",
@@ -2763,7 +2763,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "round(sum(increase(salt_state_applies_status{instance=\"$server:8216\",status=\"test\"}[$__rate_interval])))",
+          "expr": "round(sum(increase(salt_state_applies_status{instance=\"$server:$saline_port\",status=\"test\"}[$__rate_interval])))",
           "hide": false,
           "interval": "2m",
           "legendFormat": "States test",
@@ -3821,8 +3821,8 @@
       {
         "current": {
           "selected": false,
-          "text": "vz-uyuni-srv.tf.local",
-          "value": "vz-uyuni-srv.tf.local"
+          "text": "mgr-server",
+          "value": "mgr-server"
         },
         "datasource": {
           "type": "prometheus",
@@ -3852,6 +3852,15 @@
         "hide": 2,
         "name": "job",
         "query": "mgr-server",
+        "skipUrlSync": false,
+        "type": "constant"
+      },
+      {
+        "hide": 2,
+        "name": "saline_port",
+{%- endraw %}
+        "query": "{{ salt['pillar.get']('prometheus:saline_port') }}",
+{% raw -%}
         "skipUrlSync": false,
         "type": "constant"
       },
@@ -3904,4 +3913,3 @@
   "version": 190,
   "weekStart": ""
 }
-

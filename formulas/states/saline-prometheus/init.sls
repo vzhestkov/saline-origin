@@ -4,9 +4,11 @@ saline-prometheus-cfg:
   - name: /etc/prometheus/saline.yml
   - contents: |
       - targets:
-        - {{ salt['pillar.get']('mgr_server') }}:8216
+        - {{ salt['pillar.get']('mgr_server') }}:{{ salt['pillar.get']('prometheus:saline_port') }}
+{%- if salt['pillar.get']('prometheus:saline_https_connection', False) %}
         labels:
           __scheme__: https
+{% endif %}
   - require_in:
     - file: config_file
 {%- endif %}

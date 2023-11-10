@@ -1,3 +1,4 @@
+{% raw -%}
 {
   "annotations": {
     "list": [
@@ -405,7 +406,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "max by (fun,test,mods) (salt_state_jobs{instance=\"$server:8216\",status=\"targeted\"})",
+          "expr": "max by (fun,test,mods) (salt_state_jobs{instance=\"$server:$saline_port\",status=\"targeted\"})",
           "format": "table",
           "instant": true,
           "legendFormat": "Targeted",
@@ -419,7 +420,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "1 - (max by (fun,test,mods) (salt_state_jobs{instance=\"$server:8216\",status=\"pending\"}) / max by (fun,test,mods) (salt_state_jobs{instance=\"$server:8216\",status=\"targeted\"}))",
+          "expr": "1 - (max by (fun,test,mods) (salt_state_jobs{instance=\"$server:$saline_port\",status=\"pending\"}) / max by (fun,test,mods) (salt_state_jobs{instance=\"$server:$saline_port\",status=\"targeted\"}))",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -434,7 +435,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "(max by (fun,test,mods) (salt_state_jobs{instance=\"$server:8216\",status=\"succeeded\"}) / max by (fun,test,mods) (salt_state_jobs{instance=\"$server:8216\",status=\"targeted\"}))",
+          "expr": "(max by (fun,test,mods) (salt_state_jobs{instance=\"$server:$saline_port\",status=\"succeeded\"}) / max by (fun,test,mods) (salt_state_jobs{instance=\"$server:$saline_port\",status=\"targeted\"}))",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -449,7 +450,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "(max by (fun,test,mods) (salt_state_jobs{instance=\"$server:8216\",status=\"failed\"}) / max by (fun,test,mods) (salt_state_jobs{instance=\"$server:8216\",status=\"targeted\"}))",
+          "expr": "(max by (fun,test,mods) (salt_state_jobs{instance=\"$server:$saline_port\",status=\"failed\"}) / max by (fun,test,mods) (salt_state_jobs{instance=\"$server:$saline_port\",status=\"targeted\"}))",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -464,7 +465,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "(max by (fun,test,mods) (salt_state_jobs{instance=\"$server:8216\",status=\"timedout\"}) / max by (fun,test,mods) (salt_state_jobs{instance=\"$server:8216\",status=\"targeted\"}))",
+          "expr": "(max by (fun,test,mods) (salt_state_jobs{instance=\"$server:$saline_port\",status=\"timedout\"}) / max by (fun,test,mods) (salt_state_jobs{instance=\"$server:$saline_port\",status=\"targeted\"}))",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -738,7 +739,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum by (sls,sid,fun) (ceil(increase(salt_state_results{instance=\"$server:8216\",status=~\"(succeeded|notrun)\"}[$__range])))",
+          "expr": "sum by (sls,sid,fun) (ceil(increase(salt_state_results{instance=\"$server:$saline_port\",status=~\"(succeeded|notrun)\"}[$__range])))",
           "format": "table",
           "instant": true,
           "legendFormat": "StatesSucceeded",
@@ -752,7 +753,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum by (sls,sid,fun) (increase(salt_state_duration{instance=\"$server:8216\",status=~\"(succeeded|notrun)\"}[$__range]) / clamp_min(ceil(increase(salt_state_results{instance=\"$server:8216\",status=~\"(succeeded|notrun)\"}[$__range])),1) / 1000)",
+          "expr": "sum by (sls,sid,fun) (increase(salt_state_duration{instance=\"$server:$saline_port\",status=~\"(succeeded|notrun)\"}[$__range]) / clamp_min(ceil(increase(salt_state_results{instance=\"$server:$saline_port\",status=~\"(succeeded|notrun)\"}[$__range])),1) / 1000)",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -767,7 +768,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum by (sls,sid,fun) (ceil(increase(salt_state_results{instance=\"$server:8216\",status=\"failed\"}[$__range])))",
+          "expr": "sum by (sls,sid,fun) (ceil(increase(salt_state_results{instance=\"$server:$saline_port\",status=\"failed\"}[$__range])))",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -782,7 +783,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "sum by (sls,sid,fun) (increase(salt_state_duration{instance=\"$server:8216\",status=\"failed\"}[$__range]) / clamp_min(ceil(increase(salt_state_results{instance=\"$server:8216\",status=\"failed\"}[$__range])),1) / 1000)",
+          "expr": "sum by (sls,sid,fun) (increase(salt_state_duration{instance=\"$server:$saline_port\",status=\"failed\"}[$__range]) / clamp_min(ceil(increase(salt_state_results{instance=\"$server:$saline_port\",status=\"failed\"}[$__range])),1) / 1000)",
           "format": "table",
           "hide": false,
           "instant": true,
@@ -919,6 +920,15 @@
         "skipUrlSync": false,
         "sort": 0,
         "type": "query"
+      },
+      {
+        "hide": 2,
+        "name": "saline_port",
+{%- endraw %}
+        "query": "{{ salt['pillar.get']('prometheus:saline_port') }}",
+{% raw -%}
+        "skipUrlSync": false,
+        "type": "constant"
       }
     ]
   },
@@ -933,4 +943,4 @@
   "version": 45,
   "weekStart": ""
 }
-
+{%- endraw %}
