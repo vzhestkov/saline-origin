@@ -241,9 +241,7 @@ class DataManager(SignalHandlingProcess):
             "job_metrics_update_interval", 5
         )
 
-        self._job_jids_cleanup_interval = self.opts.get(
-            "job_jids_cleanup_interval", 30
-        )
+        self._job_jids_cleanup_interval = self.opts.get("job_jids_cleanup_interval", 30)
 
         self._maintenance_stop = False
         self.maintenance_thread = Thread(target=self.start_maintenance)
@@ -252,7 +250,7 @@ class DataManager(SignalHandlingProcess):
         self.start_datamerger()
 
     def _handle_signals(self, signum, sigframe):
-        #self.io_loop.stop()
+        # self.io_loop.stop()
         self.stop_maintenance()
         sys.exit(0)
 
@@ -308,10 +306,17 @@ class DataManager(SignalHandlingProcess):
 
     @salt.ext.tornado.gen.coroutine
     def metrics_publisher(self):
+        last_update = time()
         while True:
             epoch = self.datamerger.get_metrics_epoch()
-            if epoch != self.metrics_epoch or self.metrics_epoch is None:
+            cur_time = time()
+            if (
+                epoch != self.metrics_epoch
+                or self.metrics_epoch is None
+                or cur_time - last_update > 110
+            ):
                 self.metrics_epoch = epoch
+                last_update = cur_time
                 self.publisher.publish({"metrics": self.datamerger.get_metrics()})
             yield salt.ext.tornado.gen.sleep(3)
 
@@ -371,9 +376,7 @@ class EventsReader(SignalHandlingProcess):
                 return
             if self._exit:
                 return
-            parsed_data = self.event_parser.parse(
-                event.get("tag"), event.get("data")
-            )
+            parsed_data = self.event_parser.parse(event.get("tag"), event.get("data"))
             if parsed_data is not None:
                 parsed_data["rix"] = self._idx
                 self.ret_queue.put(parsed_data)
@@ -445,7 +448,7 @@ class CherryPySrv(SignalHandlingProcess):
 
         try:
             cherrypy.quickstart(root, apiopts.get("root_prefix", "/"), conf)
-        #except (ChannelFailures, TypeError):
+        # except (ChannelFailures, TypeError):
         except Exception:
             log.critical(
                 "Suppressing most probably cosmetic exception: %s",

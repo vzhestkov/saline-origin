@@ -8,7 +8,7 @@ import salt.utils.json
 import salt.utils.yaml
 
 from threading import Thread
-from time import sleep
+from time import time, sleep
 
 from salt.ext.tornado.iostream import StreamClosedError
 from salt.netapi.rest_cherrypy.app import cors_tool, hypermedia_in, hypermedia_out
@@ -114,6 +114,8 @@ class MetricsAdapter:
         self.channels_thread.start()
 
         self.metrics_buf = None
+        self.metrics_last = time()
+        self.metrics_timeout = 120
 
     def run_channels(self):
         self.io_loop = salt.ext.tornado.ioloop.IOLoop()
@@ -133,10 +135,12 @@ class MetricsAdapter:
 
     def channel_connected(self, _):
         self.metrics_buf = ""
+        self.metrics_last = time()
 
     def channel_event_handler(self, raw):
         if "metrics" in raw:
             self.metrics_buf = raw["metrics"]
+            self.metrics_last = time()
 
     def GET(self):
         cherrypy.response.headers["Cache-Control"] = "no-cache"
@@ -144,10 +148,15 @@ class MetricsAdapter:
             "Content-Type"
         ] = "text/plain;version=0.0.4;charset=utf-8"
 
+        if time() - self.metrics_last > self.metrics_timeout:
+            raise cherrypy.HTTPError(
+                500, f"No metrics update for more than {self.metrics_timeout} sec."
+            )
+
         if self.metrics_buf is not None:
             return self.metrics_buf
 
-        raise cherrypy.HTTPError(500, "No metrics connection available")
+        return ""
 
 
 class API:
