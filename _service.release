@@ -1,0 +1,20 @@
+<services>
+  <service name="obs_scm" mode="manual">
+    <param name="url">https://github.com/vzhestkov/saline.git</param>
+    <param name="scm">git</param>
+    <param name="revision">release</param>
+    <param name="versionformat">%ad</param>
+    <param name="versionrewrite-pattern">(\d{4})(\d{2})(\d{2})</param>
+    <param name="versionrewrite-replacement">\1.\2.\3</param>
+    <param name="exclude">.git</param>
+    <param name="extract">*.spec</param>
+    <param name="changesgenerate">enable</param>
+    <param name="changesauthor">Victor Zhestkov &lt;vzhestkov@suse.com&gt;</param>
+  </service>
+  <service name="set_version" mode="manual"/>
+  <service name="tar" mode="buildtime"/>
+  <service name="recompress" mode="buildtime">
+    <param name="file">*.tar</param>
+    <param name="compression">gz</param>
+  </service>
+</services>
