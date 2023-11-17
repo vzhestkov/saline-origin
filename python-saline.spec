@@ -4,7 +4,7 @@
 
 %{?!python_module:%define python_module() python3-%{**}}
 
-%define susemanager_data_dir %{_datadir}/susemanager
+%define salt_formulas_dir %{_datadir}/salt-formulas
 
 Name:           python-saline
 Version:        0
@@ -62,14 +62,14 @@ install -Dpm 0755 scripts/saline-setup %{buildroot}%{_sbindir}/
 
 install -Dpm 0644 conf/logrotate.d/saline %{buildroot}%{_sysconfdir}/logrotate.d/saline
 
-install -D -d %{buildroot}%{_sysconfdir}/salt/saline.d
+install -Dd -m 0755 %{buildroot}%{_sysconfdir}/salt/saline.d
 
 install -Dpm 0644 conf/salt/saline %{buildroot}%{_sysconfdir}/salt/saline
 install -Dpm 0644 conf/salt/saline.d/*.conf %{buildroot}%{_sysconfdir}/salt/saline.d/
 
-install -D -d %{buildroot}%{_sysconfdir}/salt/pki/saline
+install -Dd -m 0755 %{buildroot}%{_sysconfdir}/salt/pki/saline
 
-install -d %{buildroot}%{_sysconfdir}/alternatives
+install -d -m 0755 %{buildroot}%{_sysconfdir}/alternatives
 %{python_expand %$python_install
 mv %{buildroot}%{_bindir}/salined %{buildroot}%{_bindir}/salined-%{$python_bin_suffix}
 }
@@ -78,10 +78,10 @@ mv %{buildroot}%{_bindir}/salined %{buildroot}%{_bindir}/salined-%{$python_bin_s
 %fdupes %{buildroot}%{$python_sitelib}
 }
 
-install -D -d %{buildroot}%{susemanager_data_dir}/formulas/metadata
-install -D -d %{buildroot}%{susemanager_data_dir}/formulas/states
-cp -a formulas/metadata/* %{buildroot}%{susemanager_data_dir}/formulas/metadata/
-cp -a formulas/states/* %{buildroot}%{susemanager_data_dir}/formulas/states/
+install -Dd -m 0755 %{buildroot}%{salt_formulas_dir}/metadata
+install -Dd -m 0755 %{buildroot}%{salt_formulas_dir}/states
+cp -a formulas/metadata/* %{buildroot}%{salt_formulas_dir}/metadata/
+cp -a formulas/states/* %{buildroot}%{salt_formulas_dir}/states/
 
 %pre -n saline
 %service_add_pre salined.service
@@ -118,12 +118,11 @@ cp -a formulas/states/* %{buildroot}%{susemanager_data_dir}/formulas/states/
 %{_sbindir}/saline-setup
 %{_sbindir}/rcsalined
 %{_unitdir}/salined.service
-%dir %{susemanager_data_dir}
-%dir %{susemanager_data_dir}/formulas
-%dir %{susemanager_data_dir}/formulas/metadata
-%dir %{susemanager_data_dir}/formulas/states
-%{susemanager_data_dir}/formulas/metadata/*
-%{susemanager_data_dir}/formulas/states/*
+%dir %{salt_formulas_dir}
+%dir %{salt_formulas_dir}/metadata
+%dir %{salt_formulas_dir}/states
+%{salt_formulas_dir}/metadata/saline-*
+%{salt_formulas_dir}/states/saline-*
 %ghost %dir /var/log/salt
 %ghost /var/log/salt/saline
 %ghost /var/log/salt/saline-api-access.log
