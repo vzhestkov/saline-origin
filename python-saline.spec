@@ -55,21 +55,21 @@ Saline also exposes the metrics from salt events to provide more visible salt mo
 %install
 install -Dpm 0644 salined.service %{buildroot}%{_unitdir}/salined.service
 
-install -Dd -m 0755 %{buildroot}%{_sbindir}
+install -Ddm 0755 %{buildroot}%{_sbindir}
 ln -sv %{_sbindir}/service %{buildroot}%{_sbindir}/rcsalined
 
 install -Dpm 0755 scripts/saline-setup %{buildroot}%{_sbindir}/
 
 install -Dpm 0644 conf/logrotate.d/saline %{buildroot}%{_sysconfdir}/logrotate.d/saline
 
-install -Dd -m 0755 %{buildroot}%{_sysconfdir}/salt/saline.d
+install -Ddm 0755 %{buildroot}%{_sysconfdir}/salt/saline.d
 
 install -Dpm 0644 conf/salt/saline %{buildroot}%{_sysconfdir}/salt/saline
 install -Dpm 0644 conf/salt/saline.d/*.conf %{buildroot}%{_sysconfdir}/salt/saline.d/
 
-install -Dd -m 0755 %{buildroot}%{_sysconfdir}/salt/pki/saline
+install -Ddm 0755 %{buildroot}%{_sysconfdir}/salt/pki/saline
 
-install -d -m 0755 %{buildroot}%{_sysconfdir}/alternatives
+install -Ddm 0755 %{buildroot}%{_sysconfdir}/alternatives
 %{python_expand %$python_install
 mv %{buildroot}%{_bindir}/salined %{buildroot}%{_bindir}/salined-%{$python_bin_suffix}
 }
@@ -78,8 +78,8 @@ mv %{buildroot}%{_bindir}/salined %{buildroot}%{_bindir}/salined-%{$python_bin_s
 %fdupes %{buildroot}%{$python_sitelib}
 }
 
-install -Dd -m 0755 %{buildroot}%{salt_formulas_dir}/metadata
-install -Dd -m 0755 %{buildroot}%{salt_formulas_dir}/states
+install -Ddm 0755 %{buildroot}%{salt_formulas_dir}/metadata
+install -Ddm 0755 %{buildroot}%{salt_formulas_dir}/states
 cp -a formulas/metadata/* %{buildroot}%{salt_formulas_dir}/metadata/
 cp -a formulas/states/* %{buildroot}%{salt_formulas_dir}/states/
 
