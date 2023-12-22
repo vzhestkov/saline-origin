@@ -20,6 +20,8 @@ BuildRequires:  python-rpm-macros
 BuildRequires:  systemd-rpm-macros
 BuildRequires:  %{python_module base}
 Requires:       %{python_module salt}
+Requires:       python-CherryPy
+Requires:       python-python-dateutil
 Requires:       config(saline) = %{version}-%{release}
 Requires(post): update-alternatives
 Requires(postun):update-alternatives
