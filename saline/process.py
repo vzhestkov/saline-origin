@@ -23,7 +23,6 @@ from saline import restapi
 from saline.data.event import EventParser
 from saline.data.merger import DataMerger
 
-from salt.log.setup import get_multiprocessing_logging_queue
 from salt.utils.process import (
     ProcessManager,
     SignalHandlingProcess,
@@ -59,7 +58,6 @@ class Saline(SignalHandlingProcess):
         with default_signals(signal.SIGINT, signal.SIGTERM):
             log.info("Creating process manager")
             self.process_manager = ProcessManager(wait_for_kill=5)
-            log_queue = get_multiprocessing_logging_queue()
 
             self.process_manager.add_process(
                 EventsManager,
