@@ -1,7 +1,5 @@
 from threading import Lock
 
-from saline.misc import enlock
-
 
 class Metrics:
     # Define Metric types
@@ -188,7 +186,7 @@ class MetricsEntry:
         return "\n".join(b)
 
     def _set_labeled(self, labels, value=None, inc_by=None):
-        with enlock(self._lock):
+        with self._lock:
             if labels in self._labels:
                 le = self._labels[labels]
             else:
@@ -208,7 +206,7 @@ class MetricsEntry:
         else:
             if labels is not None:
                 raise KeyError
-            with enlock(self._lock):
+            with self._lock:
                 old_value = self.value
                 if value is not None:
                     self.value = value
@@ -220,7 +218,7 @@ class MetricsEntry:
         if self.value is not None:
             return
         value = None
-        with enlock(self._lock):
+        with self._lock:
             if src_labels in self._labels:
                 value = self._labels.pop(src_labels).value
         if value is None:
@@ -241,7 +239,7 @@ class MetricsCollection:
         self.set(metric, labels, inc_by=inc_by)
 
     def set(self, metric, labels=None, value=None, inc_by=None):
-        with enlock(self._lock):
+        with self._lock:
             if metric in self.metrics:
                 me = self.metrics[metric]
             else:
@@ -265,6 +263,6 @@ class MetricsCollection:
 
     def get_buf(self):
         buf = ""
-        with enlock(self._lock):
+        with self._lock:
             buf = "".join(map(str, self.metrics.values()))
         return buf
