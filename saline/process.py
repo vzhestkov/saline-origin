@@ -8,7 +8,7 @@ import signal
 import sys
 import traceback
 
-import salt.ext.tornado.ioloop
+import salt.ext.tornado.gen
 import salt.transport.ipc
 import salt.syspaths
 import salt.utils.files
@@ -23,6 +23,8 @@ from saline import restapi
 from saline.data.event import EventParser
 from saline.data.merger import DataMerger
 
+from salt.ext.tornado.ioloop import IOLoop, PeriodicCallback
+from salt.utils.event import get_event
 from salt.utils.process import (
     ProcessManager,
     SignalHandlingProcess,
@@ -102,7 +104,7 @@ class Saline(SignalHandlingProcess):
     def _handle_signals(self, signum, sigframe):
         # escalate the signals to the process manager
         self.process_manager._handle_signals(signum, sigframe)
-        time.sleep(1)
+        sleep(1)
         sys.exit(0)
 
 
@@ -123,55 +125,35 @@ class EventsManager(SignalHandlingProcess):
 
         self.name = "EventsManager"
 
+        self.event_bus = None
+
         self.opts = opts
         self.queue = queue
 
+        self.mopts = None
+
         self._salt_events = None
 
-    def run(self):
-        """
-        Saline Events Manager routine capturing the events from Sale Event Bus
-        """
+        self._int_queue = []
 
-        log.info("Running Saline Events Manager")
+        self._last_reconnect = 0
 
-        client_conf_path = os.path.join(salt.syspaths.CONFIG_DIR, "master")
-
-        log.debug("Reading the client config: %s", client_conf_path)
-        client_opts = salt.config.client_config(client_conf_path)
-
-        log.debug(
-            "Starting reading salt events from: %s (%s)",
-            client_opts["sock_dir"],
-            client_opts["transport"],
-        )
-
+    def process_events(self):
         events_filter_re = re.compile(self.opts["events_regex_filter"])
         events_additional = []
         for add_filter in self.opts.get("events_additional", []):
             events_additional.append(re.compile(add_filter))
 
-        with salt.utils.event.get_event(
-            "master",
-            sock_dir=client_opts["sock_dir"],
-            transport=client_opts["transport"],
-            opts=client_opts,
-            raise_errors=True,
-        ) as salt_events:
-            self._selt_events = salt_events
-            while True:
-                try:
-                    event = salt_events.get_event(full=True, auto_reconnect=True)
-                except TypeError:
-                    # Most probably cosmetic issue on handling the signal
-                    event = None
-                if event is None:
+        while True:
+            sleep(0.2)
+            while self._int_queue:
+                tag, event = self._int_queue.pop(0)
+
+                if not isinstance(event, dict):
                     continue
 
-                tag = event.get("tag")
-
                 if events_filter_re.match(tag):
-                    self.queue.put(event)
+                    self.queue.put((tag, event))
                     continue
 
                 in_additional = False
@@ -180,10 +162,70 @@ class EventsManager(SignalHandlingProcess):
                         in_additional = True
                         break
                 if in_additional:
-                    self.queue.put(event)
+                    self.queue.put((tag, event))
                     continue
 
                 log.debug("The event tag doesn't match the event filter: %s", tag)
+
+    @salt.ext.tornado.gen.coroutine
+    def enqueue_event(self, raw):
+        try:
+            self._int_queue.append(self.event_bus.unpack(raw))
+        except:  # pylint: disable=broad-except
+            # Just to ignore any possible exceptions on unpacking data
+            pass
+
+    def _init_event_bus(self):
+        if self.event_bus is not None:
+            self.event_bus.destroy()
+        self.event_bus = get_event(
+            "master",
+            listen=True,
+            io_loop=self.io_loop,
+            opts=self.mopts,
+            raise_errors=False,
+            keep_loop=True,
+        )
+        self.event_bus.set_event_handler(self.enqueue_event)
+
+    @salt.ext.tornado.gen.coroutine
+    def _check_connected(self):
+        if (
+            not self.event_bus.subscriber.connected()
+            and self._last_reconnect + 10 < time()
+        ):
+            log.warning("Event subscriber stream is not connected. Reconnecting...")
+            self._last_reconnect = time()
+            self._init_event_bus()
+
+    def run(self):
+        """
+        Saline Events Manager routine capturing the events from Sale Event Bus
+        """
+
+        log.info("Running Saline Events Manager")
+
+        conf_path = os.path.join(salt.syspaths.CONFIG_DIR, "master")
+
+        log.debug("Reading the config: %s", conf_path)
+        self.mopts = salt.config.client_config(conf_path)
+
+        log.debug(
+            "Starting reading salt events from: %s (%s)",
+            self.mopts["sock_dir"],
+            self.mopts["transport"],
+        )
+
+        self._int_queue_thread = Thread(target=self.process_events)
+        self._int_queue_thread.start()
+
+        self.io_loop = IOLoop(make_current=True)
+        self._init_event_bus()
+        self._check_connected_cb = PeriodicCallback(
+            self._check_connected, 3000, io_loop=self.io_loop
+        )
+        self._check_connected_cb.start()
+        self.io_loop.start()
 
     def _handle_signals(self, signum, sigframe):
         if self._salt_events is not None:
@@ -284,7 +326,7 @@ class DataManager(SignalHandlingProcess):
             self.maintenance_thread = None
 
     def start_server(self):
-        self.io_loop = salt.ext.tornado.ioloop.IOLoop()
+        self.io_loop = IOLoop()
         with salt.utils.asynchronous.current_ioloop(self.io_loop):
             pub_uri = os.path.join(self.opts["sock_dir"], "publisher.ipc")
             self.publisher = salt.transport.ipc.IPCMessagePublisher(
@@ -374,7 +416,7 @@ class EventsReader(SignalHandlingProcess):
                 return
             if self._exit:
                 return
-            parsed_data = self.event_parser.parse(event.get("tag"), event.get("data"))
+            parsed_data = self.event_parser.parse(event[0], event[1])
             if parsed_data is not None:
                 parsed_data["rix"] = self._idx
                 self.ret_queue.put(parsed_data)
