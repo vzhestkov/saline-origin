@@ -3,8 +3,6 @@ import logging
 from threading import Lock
 from time import time
 
-from saline.misc import enlock
-
 
 log = logging.getLogger(__name__)
 
@@ -28,13 +26,13 @@ class SaltJob:
         self._completed = None
 
     def update(self, minions, ts, status):
-        with enlock(self._lock):
+        with self._lock:
             self._minions.update(minions)
         if status == JobStatus.NEW:
             self._req_ts = ts
         else:
             self._last_resp_ts = ts
-            with enlock(self._lock):
+            with self._lock:
                 for minion in minions:
                     self._minions_timeout.pop(minion, None)
                     self._minions_done[minion] = ts
@@ -45,7 +43,7 @@ class SaltJob:
         return self._minions.copy()
 
     def _set_completed(self):
-        with enlock(self._lock):
+        with self._lock:
             minions_count = len(self._minions)
             results_count = len(self._minions_done) + len(self._minions_timeout)
             self._completed = minions_count == results_count
@@ -59,7 +57,7 @@ class SaltJob:
         return False
 
     def timeout_minion(self, minion, ts):
-        with enlock(self._lock):
+        with self._lock:
             if minion in self._minions_done:
                 return
             self._minions_timeout[minion] = ts
@@ -75,7 +73,7 @@ class SaltJob:
         if self._req_ts is not None and self._req_ts > before:
             return
         pending_minions = set()
-        with enlock(self._lock):
+        with self._lock:
             pending_minions = self._minions.copy()
             pending_minions.difference_update(self._minions_done.keys())
             pending_minions.difference_update(set(self._minions_timeout.keys()))
@@ -104,7 +102,7 @@ class StateJob:
         if not isinstance(minions, (list, tuple)):
             minions = [minions]
         job = None
-        with enlock(self._lock):
+        with self._lock:
             if jid in self._completed_jids:
                 job = self._completed_jids[jid][0]
             elif jid in self._jids:
@@ -117,14 +115,14 @@ class StateJob:
         if job is not None:
             job.update(minions, ts=ts, status=status)
         if status == JobStatus.SUCCEEDED:
-            with enlock(self._lock):
+            with self._lock:
                 for minion in minions:
                     self._minions_succeeded[minion] = ts
                     self._minions_failed.pop(minion, None)
                     self._minions_timeout.pop(minion, None)
                 self._minions_ever_succeeded.update(minions)
         elif status == JobStatus.FAILED:
-            with enlock(self._lock):
+            with self._lock:
                 for minion in minions:
                     self._minions_failed[minion] = ts
                     self._minions_succeeded.pop(minion, None)
@@ -132,20 +130,20 @@ class StateJob:
                 self._minions_ever_failed.update(minions)
         elif status == JobStatus.NEW:
             for minion in minions:
-                with enlock(self._lock):
+                with self._lock:
                     if minion not in self._minions_pending:
                         self._minions_pending[minion] = set([jid])
                     self._minions_pending[minion].add(jid)
         if status != JobStatus.NEW:
             for minion in minions:
-                with enlock(self._lock):
+                with self._lock:
                     if minion in self._minions_pending:
                         self._minions_pending[minion].discard(jid)
                         if len(self._minions_pending[minion]) == 0:
                             self._minions_pending.pop(minion)
 
     def timeout_jid_minion(self, jid, minion, ts):
-        with enlock(self._lock):
+        with self._lock:
             self._minions_timeout[minion] = ts
             if minion in self._minions_pending:
                 self._minions_pending[minion].discard(jid)
@@ -156,7 +154,7 @@ class StateJob:
             self._minions_ever_timeout.update([minion])
 
     def completed_jid(self, jid, ts):
-        with enlock(self._lock):
+        with self._lock:
             completed_job = self._completed_jids.get(jid, None)
             if completed_job is not None:
                 completed_job = completed_job[0]
@@ -182,7 +180,7 @@ class StateJob:
 
         jids_to_cleanup = set()
 
-        with enlock(self._lock):
+        with self._lock:
             for jid, job_data in self._completed_jids.items():
                 job_ts = job_data[1]
                 if job_ts <= ts:
@@ -199,7 +197,7 @@ class StateJob:
 
     def get_stats(self):
         stats = {}
-        with enlock(self._lock):
+        with self._lock:
             stats = {
                 "pending_jids": len(self._jids),
                 "completed_jids": len(self._completed_jids),
@@ -237,7 +235,7 @@ class StateJobCollection:
 
     def get(self, state_fun_args):
         job = None
-        with enlock(self._lock):
+        with self._lock:
             if state_fun_args in self._state_jobs:
                 job = self._state_jobs[state_fun_args]
             else:
@@ -248,7 +246,7 @@ class StateJobCollection:
         return job
 
     def jobs(self):
-        with enlock(self._lock):
+        with self._lock:
             for job in self._state_jobs.values():
                 yield job
 

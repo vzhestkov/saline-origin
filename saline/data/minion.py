@@ -4,7 +4,6 @@ from threading import Lock
 from time import time
 
 from saline.data.state import JobStatus
-from saline.misc import enlock
 
 
 log = logging.getLogger(__name__)
@@ -37,14 +36,14 @@ class Minion:
             self._request_last = ts
             self._request_count += 1
             if jid is not None and job is not None:
-                with enlock(self._lock):
+                with self._lock:
                     if jid not in self._pending_jobs:
                         self._pending_jobs[jid] = (job, ts)
         elif status in (JobStatus.SUCCEEDED, JobStatus.FAILED):
             self._response_last = ts
             self._response_count += 1
             if jid is not None:
-                with enlock(self._lock):
+                with self._lock:
                     job, req_ts = self._pending_jobs.pop(jid, (job, ts))
                     if jid in self._completed_jobs:
                         log.warning(
@@ -65,7 +64,7 @@ class Minion:
         self._offline_last = ts
         self._offline_count += 1
         pending_jobs = {}
-        with enlock(self._lock):
+        with self._lock:
             pending_jobs = self._pending_jobs
             self._pending_jobs = {}
             self._offline_jobs.update(pending_jobs)
@@ -97,7 +96,7 @@ class MinionsCollection:
         self._lock = Lock()
 
     def get(self, name):
-        with enlock(self._lock):
+        with self._lock:
             if name not in self._minions:
                 self._minions[name] = Minion(name, self._lock)
         return self._minions[name]
@@ -137,7 +136,7 @@ class MinionsCollection:
             "offline": 0,
         }
 
-        with enlock(self._lock):
+        with self._lock:
             for minion in self._minions.values():
                 if minion.is_offline():
                     stats["offline"] += 1
