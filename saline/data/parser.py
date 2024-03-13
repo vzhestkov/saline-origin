@@ -54,6 +54,8 @@ IGNORE_NO_FUN_WARNING = (
     (EventTags.SALT_AUTH, None),
     (EventTags.SALT_BATCH, EventTags.SALT_BATCH_START),
     (EventTags.SALT_BATCH, EventTags.SALT_BATCH_DONE),
+    (EventTags.SALT_MINION_START, None),
+    (EventTags.SALT_MINION_REFRESH, None),
 )
 
 STATE_RESULTS = (
