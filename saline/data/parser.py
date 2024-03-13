@@ -262,10 +262,13 @@ def parse_state_fun_args(fun_args):
             else:
                 args.append(arg)
 
+    args = kwargs.pop("mods", args)
+    if not isinstance(args, list):
+        args = [args]
     args = (
         *[
             x if x.startswith("/") else x.replace("/", ".")
-            for x in kwargs.pop("mods", args)
+            for x in args
         ],
     )
 
