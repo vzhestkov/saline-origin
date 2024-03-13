@@ -3,6 +3,7 @@ import logging
 from threading import Lock
 from time import time
 
+from saline.data.parser import EventTags
 from saline.data.state import JobStatus
 
 
@@ -15,12 +16,14 @@ class Minion:
         if lock is None:
             lock = Lock()
         self._lock = lock
-        self._request_last = None
+        self._request_last = 0
         self._request_count = 0
-        self._response_last = None
+        self._response_last = 0
         self._response_count = 0
         self._offline_last = None
         self._offline_count = 0
+        self._seen_last = 0
+        self._seen_count = 0
         self._updates = 0
         self._pending_jobs = {}
         self._completed_jobs = {}
@@ -33,15 +36,18 @@ class Minion:
         if ts is None:
             ts = time()
         if status == JobStatus.NEW:
-            self._request_last = ts
+            self._request_last = max(ts, self._request_last)
             self._request_count += 1
             if jid is not None and job is not None:
                 with self._lock:
                     if jid not in self._pending_jobs:
                         self._pending_jobs[jid] = (job, ts)
         elif status in (JobStatus.SUCCEEDED, JobStatus.FAILED):
-            self._response_last = ts
-            self._response_count += 1
+            with self._lock:
+                self._seen_last = max(ts, self._seen_last)
+                self._seen_count += 1
+                self._response_last = max(ts, self._response_last)
+                self._response_count += 1
             if jid is not None:
                 with self._lock:
                     job, req_ts = self._pending_jobs.pop(jid, (job, ts))
@@ -86,8 +92,13 @@ class Minion:
             else False
         )
 
-    def get_last_response_time(self):
-        return self._response_last
+    def update_last_seen_time(self, ts):
+        with self._lock:
+            self._seen_last = max(ts, self._seen_last)
+            self._seen_count += 1
+
+    def get_last_seen_time(self):
+        return self._seen_last
 
 
 class MinionsCollection:
@@ -106,6 +117,15 @@ class MinionsCollection:
             ts = time()
         if not isinstance(minions, (list, tuple)):
             minions = [minions]
+        with_tag = kwargs.pop("with_tag", None)
+        if with_tag in (
+            EventTags.SALT_AUTH,
+            EventTags.SALT_MINION_START,
+            EventTags.SALT_MINION_REFRESH,
+        ):
+            for minion in minions:
+                self.get(minion).update_last_seen_time(ts)
+            return
         for minion in minions:
             self.get(minion).update(ts, **kwargs)
 
@@ -140,18 +160,18 @@ class MinionsCollection:
             for minion in self._minions.values():
                 if minion.is_offline():
                     stats["offline"] += 1
-                last_resp = minion.get_last_response_time()
-                if last_resp is not None:
-                    last_resp = ts - last_resp
-                    if last_resp <= 60:
+                last_seen = minion.get_last_seen_time()
+                if last_seen is not None:
+                    last_seen = ts - last_seen
+                    if last_seen <= 60:
                         stats["active_1m"] += 1
-                    if last_resp <= 300:
+                    if last_seen <= 300:
                         stats["active_5m"] += 1
-                    if last_resp <= 900:
+                    if last_seen <= 900:
                         stats["active_15m"] += 1
-                    if last_resp <= 3600:
+                    if last_seen <= 3600:
                         stats["active_1h"] += 1
-                    if last_resp <= 86400:
+                    if last_seen <= 86400:
                         stats["active_24h"] += 1
                     stats["active_ever"] += 1
 
