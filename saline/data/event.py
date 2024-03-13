@@ -43,7 +43,10 @@ class EventParser:
         """
 
         fun = data.get("fun")
-        tag_mask, tag_main, tag_sub = get_tag_mask(tag, return_all=True)
+        tag_mask, tag_main, tag_sub, tag_minion_id = get_tag_mask(tag, return_all=True, return_minion_id=True)
+
+        if tag_minion_id is not None and "id" not in data:
+            data["id"] = tag_minion_id
 
         if tag_main == EventTags.SALT_KEY and fun is None:
             fun = data.get("act")

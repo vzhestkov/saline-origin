@@ -88,28 +88,32 @@ def __salt_run_wheel(match):
 
 __TAG_PATTERNS = (
     (
-        re.compile("salt/job/\d+/ret/.*"),
+        re.compile("salt/job/\d+/ret/(.*)"),
         "salt/job/*/ret/*",
         EventTags.SALT_JOB,
         EventTags.SALT_JOB_RET,
+        1,
     ),
-    (re.compile("\d+"), "JID", EventTags.SALT_JID, None),
+    (re.compile("\d+"), "JID", EventTags.SALT_JID, None, None),
     (
         re.compile("minion/refresh/(.+)"),
         "minion/refresh/*",
         EventTags.SALT_MINION_REFRESH,
         None,
+        1,
     ),
     (
         re.compile("salt/job/\d+/new"),
         "salt/job/*/new",
         EventTags.SALT_JOB,
         EventTags.SALT_JOB_NEW,
+        None,
     ),
     (
         re.compile("salt/batch/\d+/(start|done)"),
         __salt_batch,
         EventTags.SALT_BATCH,
+        None,
         None,
     ),
     (
@@ -117,11 +121,13 @@ __TAG_PATTERNS = (
         "salt/minion/*/start",
         EventTags.SALT_MINION_START,
         None,
+        1,
     ),
     (
         re.compile("salt/auth"),
         "salt/auth",
         EventTags.SALT_AUTH,
+        None,
         None,
     ),
     (
@@ -129,16 +135,19 @@ __TAG_PATTERNS = (
         "salt/key",
         EventTags.SALT_KEY,
         None,
+        None,
     ),
     (
         re.compile("salt/beacon/[^\/]+/(.*)"),
         __salt_beacon,
         EventTags.SALT_BEACON,
         None,
+        None,
     ),
     (
         re.compile("salt/(run|wheel)/\d+/(new|ret)"),
         __salt_run_wheel,
+        None,
         None,
         None,
     ),
@@ -147,8 +156,9 @@ __TAG_PATTERNS = (
 __STATE_TAGS_DIV = "_|-"
 
 
-def get_tag_mask(tag, return_all=False):
-    for pattern, repl, tag_main, tag_sub in __TAG_PATTERNS:
+def get_tag_mask(tag, return_all=False, return_minion_id=False):
+    tag_minion_id = None
+    for pattern, repl, tag_main, tag_sub, tag_minion_group in __TAG_PATTERNS:
         match = pattern.match(tag)
         if match:
             if callable(repl):
@@ -160,10 +170,16 @@ def get_tag_mask(tag, return_all=False):
                         tag, tag_sub = tag
             else:
                 tag = repl
+            if tag_minion_group is not None:
+                tag_minion_id = match.group(tag_minion_group)
             break
     if return_all:
+        if return_minion_id:
+            return tag, tag_main, tag_sub, tag_minion_id
         return tag, tag_main, tag_sub
     else:
+        if return_minion_id:
+            return tag, tag_minion_id
         return tag
 
 
