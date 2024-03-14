@@ -48,6 +48,15 @@ Requires:       saline(module-python) = %{version}-%{release}
 Saline is an extension for Salt providing an extra control of state apply process.
 Saline also exposes the metrics from salt events to provide more visible salt monitoring.
 
+%package -n saline-formula
+Summary:        Saline salt formula for Uyuni/SUSE Manager
+Group:          System/Management
+Requires:       grafana-formula
+Requires:       prometheus-exporters-formula
+
+%description -n saline-formula
+Saline salt formula for Uyuni/SUSE Manager with exporters configuration and dashboards.
+
 %prep
 %autosetup -n saline-%{version}
 
@@ -120,14 +129,16 @@ cp -a formulas/states/* %{buildroot}%{salt_formulas_dir}/states/
 %{_sbindir}/saline-setup
 %{_sbindir}/rcsalined
 %{_unitdir}/salined.service
+%ghost %dir /var/log/salt
+%ghost /var/log/salt/saline
+%ghost /var/log/salt/saline-api-access.log
+%ghost /var/log/salt/saline-api-error.log
+
+%files -n saline-formula
 %dir %{salt_formulas_dir}
 %dir %{salt_formulas_dir}/metadata
 %dir %{salt_formulas_dir}/states
 %{salt_formulas_dir}/metadata/saline-*
 %{salt_formulas_dir}/states/saline-*
-%ghost %dir /var/log/salt
-%ghost /var/log/salt/saline
-%ghost /var/log/salt/saline-api-access.log
-%ghost /var/log/salt/saline-api-error.log
 
 %changelog

@@ -269,6 +269,13 @@ class DataMerger:
                         )
         else:
             self.metrics.inc(Metrics.SALT_EVENTS_TAGS_FUNCS, (tag_mask, "-"))
+        if tag_main in (
+            EventTags.SALT_AUTH,
+            EventTags.SALT_MINION_START,
+            EventTags.SALT_MINION_REFRESH,
+        ):
+            if "id" in data:
+                self.minions.update([data["id"]], ts, with_tag=tag_main)
         if tag_main == EventTags.SALT_BATCH and tag_sub in (
             EventTags.SALT_BATCH_START,
             EventTags.SALT_BATCH_DONE,
