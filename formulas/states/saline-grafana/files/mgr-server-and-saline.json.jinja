@@ -2775,6 +2775,190 @@
       "type": "timeseries"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 65
+      },
+      "id": 74,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "increase(salt_master_stats_runs{instance=\"$server:$saline_port\"}[$__rate_interval])",
+          "legendFormat": "{{cmd}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Salt Master Stats (runs)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${DS_PROMETHEUS}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 75
+      },
+      "id": 75,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "editorMode": "code",
+          "expr": "salt_master_stats_mean{instance=\"$server:$saline_port\"}",
+          "legendFormat": "{{cmd}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Salt Master Stats (avg. duration)",
+      "type": "timeseries"
+    },
+    {
       "collapsed": false,
       "datasource": {
         "type": "prometheus",
@@ -2784,7 +2968,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 65
+        "y": 85
       },
       "id": 33,
       "panels": [],
@@ -2816,7 +3000,7 @@
         "h": 6,
         "w": 8,
         "x": 0,
-        "y": 66
+        "y": 86
       },
       "hiddenSeries": false,
       "id": 23,
@@ -2942,7 +3126,7 @@
         "h": 6,
         "w": 8,
         "x": 8,
-        "y": 66
+        "y": 86
       },
       "hiddenSeries": false,
       "id": 31,
@@ -3214,7 +3398,7 @@
         "h": 6,
         "w": 8,
         "x": 16,
-        "y": 66
+        "y": 86
       },
       "id": 21,
       "interval": "2s",
@@ -3366,7 +3550,7 @@
         "h": 6,
         "w": 8,
         "x": 0,
-        "y": 72
+        "y": 92
       },
       "id": 48,
       "interval": "2s",
@@ -3551,7 +3735,7 @@
         "h": 6,
         "w": 8,
         "x": 8,
-        "y": 72
+        "y": 92
       },
       "id": 51,
       "links": [],
@@ -3657,7 +3841,7 @@
         "h": 6,
         "w": 8,
         "x": 16,
-        "y": 72
+        "y": 92
       },
       "hiddenSeries": false,
       "id": 61,
