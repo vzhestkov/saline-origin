@@ -161,7 +161,7 @@ class MinionsCollection:
                 if minion.is_offline():
                     stats["offline"] += 1
                 last_seen = minion.get_last_seen_time()
-                if last_seen is not None:
+                if last_seen != 0:
                     last_seen = ts - last_seen
                     if last_seen <= 60:
                         stats["active_1m"] += 1
