@@ -199,4 +199,7 @@ class EventParser:
                 parsed_data["errors"] = len(data["return"])
             parsed_data["return"] = data["return"]
 
+        if tag_main == EventTags.SALT_STATS:
+            parsed_data["stats"] = data.get("stats", {})
+
         return parsed_data

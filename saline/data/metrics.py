@@ -17,6 +17,9 @@ class Metrics:
     SALT_STATE_DURATION = 9
     SALT_STATE_JOBS = 10
     SALT_MINIONS = 11
+    SALT_STATS_RUNS = 12
+    SALT_STATS_MEAN = 13
+    SALT_STATS_TOTAL = 14
     # IDs for internal metrics
     SALINE_INTERNAL_RIX_TOTAL = 100
     # Metric labels definitions
@@ -27,6 +30,7 @@ class Metrics:
     LABEL_STATUS = 5
     LABEL_MODS = 6
     LABEL_TEST = 7
+    LABEL_MASTER_CMD = 50
     # IDs for labels of internal metrics
     LABEL_RIX = 100
 
@@ -53,6 +57,11 @@ LABELS_FUN_MODS_TEST_STATUS = (
     (Metrics.LABEL_MODS, "mods"),
     (Metrics.LABEL_TEST, "test"),
     (Metrics.LABEL_STATUS, "status"),
+)
+
+
+LABELS_SALT_STATS = (
+    (Metrics.LABEL_MASTER_CMD, "cmd"),
 )
 
 
@@ -129,6 +138,24 @@ METRICS = {
         "Total number of the salt minions by statuses",
         LABELS_STATUS,
     ),
+    Metrics.SALT_STATS_RUNS: (
+        Metrics.TYPE_COUNTER,
+        "salt_master_stats_runs",
+        "Total number of salt master internal cmd calls",
+        LABELS_SALT_STATS,
+    ),
+    Metrics.SALT_STATS_MEAN: (
+        Metrics.TYPE_GAUGE,
+        "salt_master_stats_mean",
+        "Mean time of execution of salt master internal cmd calls",
+        LABELS_SALT_STATS,
+    ),
+    Metrics.SALT_STATS_TOTAL: (
+        Metrics.TYPE_COUNTER,
+        "salt_master_stats_total",
+        "Total time of execution of salt master internal cmd calls",
+        LABELS_SALT_STATS,
+    ),
 }
 
 
@@ -150,7 +177,7 @@ class MetricsLabeledEntry:
         self.labels = ",".join(ls)
 
     def inc(self, inc_by=1):
-        self.set(inc_by=inc_by)
+        return self.set(inc_by=inc_by)
 
     def set(self, value=None, inc_by=None):
         old_value = self.value
@@ -166,7 +193,9 @@ class MetricsEntry:
         self.mtype, self.label, self.doc, self._labels_defs = METRICS[metric]
         self._lock = lock
         self.value = None
+        # The entries with None in the value are labeled
         if self._labels_defs is None:
+            # If there is no labels definitions set it as non labeled
             self.value = 0
         else:
             self._labels = {}
@@ -195,11 +224,12 @@ class MetricsEntry:
         return le.set(value, inc_by)
 
     def inc(self, labels, inc_by):
-        self.set(labels, inc_by=inc_by)
+        return self.set(labels, inc_by=inc_by)
 
     def set(self, labels, value=None, inc_by=None):
         old_value = None
         if self.value is None:
+            # The entries with None in the value are labeled
             if labels is None:
                 raise KeyError
             old_value = self._set_labeled(labels, value, inc_by)
@@ -236,7 +266,7 @@ class MetricsCollection:
         return self._epoch
 
     def inc(self, metric, labels=None, inc_by=1):
-        self.set(metric, labels, inc_by=inc_by)
+        return self.set(metric, labels, inc_by=inc_by)
 
     def set(self, metric, labels=None, value=None, inc_by=None):
         with self._lock:
@@ -249,9 +279,11 @@ class MetricsCollection:
             old_value = me.set(labels, value)
             if old_value != value:
                 self._epoch += 1
+            return old_value
         elif inc_by is not None:
-            me.inc(labels, inc_by)
+            old_value = me.inc(labels, inc_by)
             self._epoch += 1
+            return old_value
 
     def move(self, metrics, src_labels, dst_labels):
         if not isinstance(metrics, (list, tuple)):

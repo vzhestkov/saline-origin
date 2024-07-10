@@ -106,6 +106,7 @@ DEFAULT_SALINE_OPTS = immutabletypes.freeze(
         "events_additional": [
             "salt/auth",
             "salt/key",
+            "salt/stats/[^\/]+",
             "salt/batch/\d+/(start|done)",
             "salt/(run|wheel)/\d+/(new|ret)",
             "salt/minion/[^\/]+/start",

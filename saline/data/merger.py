@@ -276,13 +276,38 @@ class DataMerger:
         ):
             if "id" in data:
                 self.minions.update([data["id"]], ts, with_tag=tag_main)
-        if tag_main == EventTags.SALT_BATCH and tag_sub in (
+        elif tag_main == EventTags.SALT_BATCH and tag_sub in (
             EventTags.SALT_BATCH_START,
             EventTags.SALT_BATCH_DONE,
         ):
             down_minions = data.get("down_minions", [])
             if down_minions:
                 self.minions.offline(down_minions, ts)
+        elif tag_main == EventTags.SALT_STATS:
+            for stat_key, stats in data.get("stats", {}).items():
+                runs = stats.get("runs", 0)
+                mean = stats.get("mean", 0.0)
+                add_to_total = runs * mean
+                prev_runs = self.metrics.inc(
+                    Metrics.SALT_STATS_RUNS,
+                    (stat_key,),
+                    inc_by=runs,
+                )
+                if prev_runs is None:
+                     prev_runs = 0
+                prev_total = self.metrics.inc(
+                    Metrics.SALT_STATS_TOTAL,
+                    (stat_key,),
+                    inc_by=add_to_total,
+                )
+                if prev_total is None:
+                     prev_total = 0.0
+                mean = (prev_total + add_to_total) / max(prev_runs + runs, 1)
+                self.metrics.set(
+                    Metrics.SALT_STATS_MEAN,
+                    (stat_key,),
+                    mean,
+                )
         trimmed = data.get("trimmed")
         if trimmed:
             log.warning(

@@ -43,6 +43,8 @@ class EventTags:
     SALT_WHEEL_NEW = 1
     # salt/wheel/*/ret
     SALT_WHEEL_RET = 2
+    # salt/stats/*
+    SALT_STATS = 11
 
 
 IGNORE_EVENTS = (
@@ -56,6 +58,7 @@ IGNORE_NO_FUN_WARNING = (
     (EventTags.SALT_BATCH, EventTags.SALT_BATCH_DONE),
     (EventTags.SALT_MINION_START, None),
     (EventTags.SALT_MINION_REFRESH, None),
+    (EventTags.SALT_STATS, None),
 )
 
 STATE_RESULTS = (
@@ -148,6 +151,13 @@ __TAG_PATTERNS = (
         re.compile("salt/(run|wheel)/\d+/(new|ret)"),
         __salt_run_wheel,
         None,
+        None,
+        None,
+    ),
+    (
+        re.compile("salt/stats/[^\/]+"),
+        "salt/stats/*",
+        EventTags.SALT_STATS,
         None,
         None,
     ),
