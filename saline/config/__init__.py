@@ -111,6 +111,7 @@ DEFAULT_SALINE_OPTS = immutabletypes.freeze(
             "salt/(run|wheel)/\d+/(new|ret)",
             "salt/minion/[^\/]+/start",
             "minion/refresh/[^\/]+",
+            "suse/manager/pxe_update",
         ],
         "sock_dir": "/run/saline",
         "ipc_write_buffer": 0,

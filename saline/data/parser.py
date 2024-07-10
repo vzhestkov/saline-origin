@@ -45,6 +45,8 @@ class EventTags:
     SALT_WHEEL_RET = 2
     # salt/stats/*
     SALT_STATS = 11
+    # suse/manager/pxe_update
+    SUMA_PXE_UPDATE = 12
 
 
 IGNORE_EVENTS = (
@@ -59,6 +61,7 @@ IGNORE_NO_FUN_WARNING = (
     (EventTags.SALT_MINION_START, None),
     (EventTags.SALT_MINION_REFRESH, None),
     (EventTags.SALT_STATS, None),
+    (EventTags.SUMA_PXE_UPDATE, None),
 )
 
 STATE_RESULTS = (
@@ -158,6 +161,13 @@ __TAG_PATTERNS = (
         re.compile("salt/stats/[^\/]+"),
         "salt/stats/*",
         EventTags.SALT_STATS,
+        None,
+        None,
+    ),
+    (
+        re.compile("suse/manager/pxe_update"),
+        "suse/manager/pxe_update",
+        EventTags.SUMA_PXE_UPDATE,
         None,
         None,
     ),
