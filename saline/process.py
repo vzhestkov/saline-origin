@@ -416,7 +416,7 @@ class EventsReader(SignalHandlingProcess):
                 return
             if self._exit:
                 return
-            parsed_data = self.event_parser.parse(event[0], event[1])
+            parsed_data = self.event_parser.parse(*event)
             if parsed_data is not None:
                 parsed_data["rix"] = self._idx
                 self.ret_queue.put(parsed_data)
