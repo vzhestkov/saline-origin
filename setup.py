@@ -1,5 +1,6 @@
 import os
 import re
+import subprocess
 import sys
 
 from setuptools import find_packages, setup
@@ -7,7 +8,7 @@ from setuptools import find_packages, setup
 
 def get_version():
     cwd = os.getcwd()
-    m = re.search(r"saline-(\d{4}\.\d{2}.\d{2})", cwd)
+    m = re.search(r"salineX-(\d{4}\.\d{2}.\d{2})", cwd)
     if m:
         print("XXX %s XXX" % m[1], file=sys.stderr)
         #return m[1]
