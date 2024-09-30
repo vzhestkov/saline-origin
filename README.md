@@ -29,24 +29,24 @@
 
 1. Salt Events:
 
-   ![Salt Events](https://github.com/vzhestkov/saline/blob/main/imgs/salt-events.png)
+   ![Salt Events](imgs/salt-events.png)
 
 2. Minions Activity:
 
-   ![Minions Activity](https://github.com/vzhestkov/saline/blob/main/imgs/minions-activity.png)
+   ![Minions Activity](imgs/minions-activity.png)
 
 3. Salt Events by Tags and Functions:
 
-   ![Salt Events by Tags and Functions](https://github.com/vzhestkov/saline/blob/main/imgs/salt-events-by-tags-and-fun.png)
+   ![Salt Events by Tags and Functions](imgs/salt-events-by-tags-and-fun.png)
 
 4. Salt States:
 
-   ![Salt States](https://github.com/vzhestkov/saline/blob/main/imgs/salt-states.png)
+   ![Salt States](imgs/salt-states.png)
 
 5. Salt State Jobs:
 
-   ![Salt State Jobs](https://github.com/vzhestkov/saline/blob/main/imgs/salt-state-jobs.png)
+   ![Salt State Jobs](imgs/salt-state-jobs.png)
 
 5. Salt States Profiling:
 
-   ![Salt State Jobs](https://github.com/vzhestkov/saline/blob/main/imgs/salt-states-profiling.png)
+   ![Salt State Jobs](imgs/salt-states-profiling.png)
