@@ -15,8 +15,8 @@ def get_version():
     file_date = subprocess.check_output(
         "find . -type f -printf '%AY.%Am.%Ad\n' | sort -r | head -n 1",
         shell=True,
-        text=True,
-    )[:-1]
+    )
+    file_date = file_date.decode()[:-1]
     if file_date:
         print("ZZZ %s ZZZ" % file_date, file=sys.stderr)
         return file_date
