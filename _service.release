@@ -1,6 +1,6 @@
 <services>
   <service name="obs_scm" mode="manual">
-    <param name="url">https://github.com/vzhestkov/saline.git</param>
+    <param name="url">https://github.com/openSUSE/saline.git</param>
     <param name="scm">git</param>
     <param name="revision">release</param>
     <param name="versionformat">%ad</param>
