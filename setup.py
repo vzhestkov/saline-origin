@@ -8,7 +8,7 @@ from setuptools import find_packages, setup
 def get_version():
     cwd = os.getcwd()
     m = re.search(r"saline-(\d{4}\.\d{2}.\d{2})", cwd)
-    if m is not None and len(m) == 1:
+    if m:
         print("XXX %s XXX" % m[1], file=sys.stderr)
         #return m[1]
     file_date = subprocess.check_output(
