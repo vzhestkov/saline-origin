@@ -1,4 +1,5 @@
-from distutils.core import setup
+from setuptools import find_packages, setup
+
 
 setup(
     name="saline",
@@ -6,8 +7,8 @@ setup(
     description="The salt event collector and manager",
     author="Victor Zhestkov",
     author_email="vzhestkov@gmail.com",
-    version="2023.04.18",
-    packages=["saline", "saline.config", "saline.data"],
+    version="2024.09.30",
+    packages=find_packages(),
     license="GPL-2.0",
     scripts=["salined"],
 )
