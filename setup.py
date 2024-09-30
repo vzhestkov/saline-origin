@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 
 from setuptools import find_packages, setup
@@ -6,8 +7,20 @@ from setuptools import find_packages, setup
 
 def get_version():
     cwd = os.getcwd()
-    print("DEBUGIT %s DBG" % (cwd), file=sys.stderr)
-    return "2024.09.30"
+    m = re.search(r"saline-(\d{4}\.\d{2}.\d{2})", cwd)
+    if m is not None and len(m) == 1:
+        print("XXX %s XXX" % m[1], file=sys.stderr)
+        #return m[1]
+    file_date = subprocess.check_output(
+        "find . -type f -printf '%AY.%Am.%Ad\n' | sort -r | head -n 1",
+        shell=True,
+        text=True,
+    )[:-1]
+    if file_date:
+        print("ZZZ %s ZZZ" % file_date, file=sys.stderr)
+        return file_date
+    # Fallback to some default value if not possible to calculate
+    return "2024.01.16"
 
 
 setup(
