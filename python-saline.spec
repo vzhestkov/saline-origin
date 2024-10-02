@@ -16,7 +16,7 @@ BuildArch:      noarch
 BuildRequires:  fdupes
 BuildRequires:  python-rpm-macros
 BuildRequires:  systemd-rpm-macros
-BuildRequires:  %{python_module base}
+BuildRequires:  %{python_module base >= 3.6}
 BuildRequires:  %{python_module setuptools}
 BuildRequires:  %{python_module packaging}
 BuildRequires:  %{python_module pip}
@@ -121,8 +121,8 @@ cp -a formulas/states/* %{buildroot}%{salt_formulas_dir}/states/
 %defattr(-,root,root,-)
 %config(noreplace) %{_sysconfdir}/logrotate.d/saline
 %dir %attr(0750,salt,salt) %{_sysconfdir}/salt/saline.d
-%config %{_sysconfdir}/salt/saline
-%config %{_sysconfdir}/salt/saline.d/*.conf
+%config %attr(0640,salt,salt) %{_sysconfdir}/salt/saline
+%config %attr(0640,salt,salt) %{_sysconfdir}/salt/saline.d/*.conf
 %dir %attr(0750,salt,salt) %{_sysconfdir}/salt/pki/saline
 %ghost %config %attr(0600,salt,salt) %{_sysconfdir}/salt/pki/saline/uyuni.crt
 %ghost %config %attr(0600,salt,salt) %{_sysconfdir}/salt/pki/saline/uyuni.key
