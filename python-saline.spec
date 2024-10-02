@@ -1,7 +1,5 @@
 # spec file for package python-saline
 
-%define pythons python3
-
 %{?!python_module:%define python_module() python3-%{**}}
 
 %define salt_formulas_dir %{_datadir}/salt-formulas
@@ -19,6 +17,8 @@ BuildRequires:  fdupes
 BuildRequires:  python-rpm-macros
 BuildRequires:  systemd-rpm-macros
 BuildRequires:  %{python_module base}
+BuildRequires:  %{python_module setuptools}
+Requires:       python-base
 Requires:       python-CherryPy
 Requires:       python-python-dateutil
 Requires:       python-salt
