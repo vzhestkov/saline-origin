@@ -64,7 +64,7 @@ Saline salt formula for Uyuni/SUSE Manager with exporters configuration and dash
 
 %build
 #%%python_build
-%pyproject_build
+%pyproject_wheel
 
 %install
 install -Dpm 0644 salined.service %{buildroot}%{_unitdir}/salined.service

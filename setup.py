@@ -29,7 +29,7 @@ setup(
     description="The salt event collector and manager",
     author="Victor Zhestkov",
     author_email="vzhestkov@gmail.com",
-    version=str(Version(get_saline_version()),
+    version=str(Version(get_saline_version())),
     packages=find_packages(),
     license="Apache-2.0",
     scripts=["salined"],
