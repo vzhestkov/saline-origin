@@ -19,6 +19,8 @@ BuildRequires:  systemd-rpm-macros
 BuildRequires:  %{python_module base}
 BuildRequires:  %{python_module setuptools}
 BuildRequires:  %{python_module packaging}
+BuildRequires:  %{python_module pip}
+BuildRequires:  %{python_module wheel}
 Requires:       python-CherryPy
 Requires:       python-python-dateutil
 Requires:       python-salt
@@ -61,7 +63,8 @@ Saline salt formula for Uyuni/SUSE Manager with exporters configuration and dash
 %autosetup -n saline-%{version}
 
 %build
-%python_build
+#%%python_build
+%pyproject_build
 
 %install
 install -Dpm 0644 salined.service %{buildroot}%{_unitdir}/salined.service
