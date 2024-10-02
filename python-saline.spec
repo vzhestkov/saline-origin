@@ -1,6 +1,6 @@
 # spec file for package python-saline
 
-%{?!python_module:%define python_module() python3-%{**}}
+%define plainpython python
 
 %define salt_formulas_dir %{_datadir}/salt-formulas
 
@@ -21,6 +21,7 @@ BuildRequires:  %{python_module setuptools}
 BuildRequires:  %{python_module packaging}
 BuildRequires:  %{python_module pip}
 BuildRequires:  %{python_module wheel}
+Requires:       %plainpython(abi) = %{python_version}
 Requires:       python-CherryPy
 Requires:       python-python-dateutil
 Requires:       python-salt
