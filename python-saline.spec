@@ -18,7 +18,7 @@ BuildRequires:  python-rpm-macros
 BuildRequires:  systemd-rpm-macros
 BuildRequires:  %{python_module base}
 BuildRequires:  %{python_module setuptools}
-Requires:       python-base
+BuildRequires:  %{python_module packaging}
 Requires:       python-CherryPy
 Requires:       python-python-dateutil
 Requires:       python-salt
